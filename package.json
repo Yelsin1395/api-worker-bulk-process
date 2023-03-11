@@ -1,0 +1,42 @@
+{
+  "name": "scraping-social-network",
+  "version": "1.0.0",
+  "description": "This project consists of scrapping social networks in order to obtain data, to be able to analyze it for the benefit of the company.",
+  "main": "index.js",
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "start": "cross-env NODE_ENV=production node dist/index.js",
+    "dev": "cross-env NODE_ENV=development nodemon src/index.js --exec babel-node",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "JESÚS YELSIN BROLY GARCÍA RIVERA",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yelsin1395/brolycode.server/issues"
+  },
+  "homepage": "https://github.com/Yelsin1395/brolycode.server#readme",
+  "dependencies": {
+    "awilix": "^8.0.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "express": "^4.18.2",
+    "express-async-error": "0.0.2",
+    "helmet": "^6.0.1",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.0",
+    "@babel/node": "^7.20.7",
+    "@babel/plugin-transform-runtime": "^7.21.0",
+    "@babel/preset-env": "^7.20.2",
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.21"
+  }
+}
