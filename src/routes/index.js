@@ -8,10 +8,10 @@ import { errorMiddleware, notFoundMiddleware } from '../middlewares/exception.mi
 
 export default function ({ homeRoutes }) {
   const router = express.Router();
-  const functionRoutes = express.Router();
+  const apiRoutes = express.Router();
 
   //middleware default
-  functionRoutes
+  apiRoutes
     .use(express.json())
     .use(express.urlencoded({ extended: true }))
     .use(cors())
@@ -20,14 +20,14 @@ export default function ({ homeRoutes }) {
     .use(morgan('dev'));
 
   // prefix route
-  router.use('/scraping', functionRoutes);
+  router.use('/scraping', apiRoutes);
 
   //middleware setting
   router.use(errorMiddleware);
   router.use(notFoundMiddleware);
 
   // functions
-  functionRoutes.use('/', homeRoutes);
+  apiRoutes.use('/', homeRoutes);
 
   return router;
 }

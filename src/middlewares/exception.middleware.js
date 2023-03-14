@@ -1,8 +1,8 @@
 export const errorMiddleware = (err, req, res, next) => {
   if (err.errorCode) {
-    res.status(err.errorStatus);
+    res.status(err.errorStatus || 400);
     res.send({
-      status: err.errorStatus,
+      status: err.errorStatus || 400,
       code: err.errorCode,
       message: err.message,
     });

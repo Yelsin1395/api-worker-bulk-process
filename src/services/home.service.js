@@ -1,10 +1,13 @@
 export default class HomeService {
-  constructor() {}
+  constructor({ pkg }) {
+    this._pkg = pkg;
+  }
 
   index() {
     return {
-      message: 'Welcome to application scrapping social network',
-      version: '1.0.0',
+      status: 200,
+      message: `Welcome to application ${this._pkg.name.split('-').join(' ')}.`,
+      version: `${this._pkg.version}`,
     };
   }
 }

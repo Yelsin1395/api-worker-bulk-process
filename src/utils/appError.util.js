@@ -1,5 +1,5 @@
 export default class AppError extends Error {
-  constructor(errorStatus = 400, errorCode, message) {
+  constructor(errorStatus, errorCode, message) {
     super(errorStatus, errorCode, message);
 
     this.errorStatus = parseInt(errorStatus);
