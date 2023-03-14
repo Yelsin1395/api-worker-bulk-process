@@ -9,7 +9,6 @@
       }
     ]
   ],
-  "plugins": ["@babel/transform-runtime"],
   "env": {
     "debug": {
       "sourceMap": "inline",
