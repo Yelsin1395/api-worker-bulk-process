@@ -2,10 +2,13 @@
   "name": "scraping-social-network",
   "version": "1.0.0",
   "description": "This project consists of scrapping social networks in order to obtain data, to be able to analyze it for the benefit of the company.",
+  "engines": {
+    "node": "14.x"
+  },
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "start": "cross-env NODE_ENV=production node dist/index.js",
+    "start": "node dist/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js --exec babel-node",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
