@@ -20,14 +20,14 @@ export default function ({ homeRoutes }) {
     .use(morgan('dev'));
 
   // prefix route
-  router.use('/scraping', functionRoutes);
+  router.use('/', functionRoutes);
 
   //middleware setting
   router.use(errorMiddleware);
   router.use(notFoundMiddleware);
 
   // functions
-  functionRoutes.use('/', homeRoutes);
+  functionRoutes.use('', homeRoutes);
 
   return router;
 }

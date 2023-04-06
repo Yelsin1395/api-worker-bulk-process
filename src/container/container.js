@@ -14,15 +14,12 @@ container.register({
   routes: asFunction(routes).singleton(),
 });
 
-container.loadModules(
-  ['services/**/*.service.js', 'controllers/**/*.controller.js', 'routes/**/*.routes.js'],
-  {
-    cwd: `${__dirname}/..`,
-    formatName: 'camelCase',
-    resolverOptions: {
-      lifetime: Lifetime.SINGLETON,
-    },
-  }
-);
+container.loadModules(['services/**/*.service.js', 'controllers/**/*.controller.js', 'routes/**/*.routes.js'], {
+  cwd: `${__dirname}/..`,
+  formatName: 'camelCase',
+  resolverOptions: {
+    lifetime: Lifetime.SINGLETON,
+  },
+});
 
 export default container;
