@@ -6,6 +6,7 @@ export default class HomeController {
   }
 
   index(req, res) {
-    return res.status(200).send(this._homeService.index());
+    const data = this._homeService.index();
+    return res.status(data.status).send(data);
   }
 }

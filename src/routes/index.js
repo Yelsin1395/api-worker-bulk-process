@@ -13,21 +13,21 @@ export default function ({ homeRoutes }) {
   //middleware default
   apiRoutes
     .use(express.json())
-    .use(express.urlencoded({ extended: true }))
+    .use(express.urlencoded({ extended: false }))
     .use(cors())
     .use(helmet())
     .use(compression())
     .use(morgan('dev'));
 
   // prefix route
-  router.use('', functionRoutes);
+  router.use('', apiRoutes);
 
   //middleware setting
   router.use(errorMiddleware);
   router.use(notFoundMiddleware);
 
   // functions
-  functionRoutes.use('/', homeRoutes);
+  apiRoutes.use('/', homeRoutes);
 
   return router;
 }
