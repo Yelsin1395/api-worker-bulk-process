@@ -6,7 +6,7 @@ import compression from 'compression';
 import 'express-async-error';
 import { errorMiddleware, notFoundMiddleware } from '../middlewares/exception.middleware';
 
-export default function ({ homeRoutes }) {
+export default function ({ homeRoutes, clinicaRecordRoutes }) {
   const router = express.Router();
   const apiRoutes = express.Router();
 
@@ -28,6 +28,7 @@ export default function ({ homeRoutes }) {
 
   // functions
   apiRoutes.use('/', homeRoutes);
+  apiRoutes.use('/clinicarecord', clinicaRecordRoutes);
 
   return router;
 }
