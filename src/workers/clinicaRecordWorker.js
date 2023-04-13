@@ -12,7 +12,7 @@ const items = JSON.parse(Buffer.from(workerData.dataProcess).toString());
 async function workerProcess(items) {
   const { cosmosImpl } = await initConnect();
   const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_EXPEDIENTEDIGITALTEST });
-  const wd = processRunner(items, 50);
+  const wd = processRunner(items, 30);
   let processEnd = false;
 
   do {
@@ -21,7 +21,7 @@ async function workerProcess(items) {
       for (let item of value) {
         console.log(clc.yellowBright(`⌛ Data process number: ${item.id}`));
         item = { ...item, nroLote: String(item.nroLote) };
-        await container.items.create(item);
+        await container.items.upsert(item);
         console.log(clc.greenBright(`✅ Data ${item.id} is processed correctly`));
       }
     }

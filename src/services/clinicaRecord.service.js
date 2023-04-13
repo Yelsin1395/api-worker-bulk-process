@@ -7,7 +7,7 @@ export default class ClinicaRecordService {
 
   async processAllRecords() {
     let continuationToken = null;
-    let count = 0;
+
     do {
       const result = await this._clinicaRecordRepository.traverse(continuationToken);
 
@@ -21,8 +21,6 @@ export default class ClinicaRecordService {
       worker.once('message', (processId) => {
         console.log(`🚀 Worker clinica record in process ${processId}`);
       });
-
-      count = count + 1;
-    } while (count < 4);
+    } while (continuationToken);
   }
 }
