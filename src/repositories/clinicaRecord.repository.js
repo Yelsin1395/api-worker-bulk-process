@@ -12,7 +12,7 @@ export default class ClinicaRecordRepository {
       parameters: [],
     };
 
-    const data = await container.items.query(querySpec, { maxItemCount: 500, continuationToken }).fetchNext();
+    const data = await container.items.query(querySpec, { maxItemCount: 300, continuationToken }).fetchNext();
 
     console.log(`📦 Data package process found: ${data?.resources?.length}`);
 
