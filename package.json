@@ -1,11 +1,11 @@
 {
-  "name": "clinica-worker-api",
+  "name": "api-worker-bulk-process",
   "version": "1.0.0",
   "description": "Application arq template api.",
   "engines": {
-    "node": "14.x"
+    "node": "16.x"
   },
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
     "start": "node dist/index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Yelsin1395/arq-template-api-js.git"
+    "url": "https://github.com/Yelsin1395/api-worker-bulk-process.git"
   },
   "keywords": [],
   "author": "JESÚS YELSIN BROLY GARCÍA RIVERA",
