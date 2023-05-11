@@ -21,4 +21,25 @@ export default class ClinicaRecordRepository {
       continuationToken: data.continuationToken,
     };
   }
+
+  async getRecordByLoteAndFactura(nroLote, facturaNro) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
+
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.nroLote = @nroLote AND c.facturaNro = @facturaNro',
+      parameters: [
+        {
+          name: '@nroLote',
+          value: nroLote,
+        },
+        {
+          name: '@facturaNro',
+          value: facturaNro,
+        },
+      ],
+    };
+
+    const result = await container.items.query(querySpec).fetchAll();
+    return result.resources;
+  }
 }

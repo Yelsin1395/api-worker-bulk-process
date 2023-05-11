@@ -20,16 +20,19 @@ async function workerProcess(items) {
     if (value) {
       for (let item of value) {
         console.log(clc.yellowBright(`⌛ Data process number: ${item.id}`));
+
         item = { ...item, nroLote: String(item.nroLote) };
+        
         await container.items.upsert(item);
-        console.log(clc.greenBright(`✅ Data ${item.id} is processed correctly`));
+
+        console.log(clc.greenBright(`💾 The data is stored correctly`));
       }
     }
 
     processEnd = done;
   } while (!processEnd);
 
-  console.log(clc.bgCyanBright(`🔧 Process worker finished ${processId}`));
+  console.log(clc.bgCyanBright(`🏁 Process worker finished ${processId}`));
 }
 
 workerProcess(items);

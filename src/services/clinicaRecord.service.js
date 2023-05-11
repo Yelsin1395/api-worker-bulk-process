@@ -19,7 +19,7 @@ export default class ClinicaRecordService {
       });
 
       worker.once('message', (processId) => {
-        console.log(`🚀 Worker clinica record in process ${processId}`);
+        console.log(`♻️ Worker clinica record in process ${processId}`);
       });
     } while (continuationToken);
   }
