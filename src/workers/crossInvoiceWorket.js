@@ -14,7 +14,7 @@ async function workerProcess(data) {
 
   const { cosmosImpl } = await initConnect();
   const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_INVOICE });
-  const wd = processRunner(data, 200);
+  const wd = processRunner(data, process.env.MAX_ITEM_PROCESS_WORKER);
   let processEnd = false;
 
   do {
