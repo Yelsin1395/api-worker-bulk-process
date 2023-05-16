@@ -25,9 +25,9 @@ export default class InvoiceService {
       let processCount = 1;
 
       progressBar.start(itemsTotalProcess, 0);
-
-      if(result.continuationToken) {
-        continuationToken = result.continuationToken;
+      continuationToken = result.continuationToken;
+      
+      if(continuationToken) {
         fs.appendFileSync('logToken.txt', continuationToken);
       }      
 
