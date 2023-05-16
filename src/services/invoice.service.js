@@ -1,4 +1,6 @@
 import { Worker } from 'worker_threads';
+import cliProgress from 'cli-progress';
+const clc = require('cli-color');
 import fs from 'fs';
 
 export default class InvoiceService {
@@ -10,9 +12,19 @@ export default class InvoiceService {
   async processCrossInvoice() {
     let continuationToken = null;
 
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+
     do {
       const result = await this._clinicaRecordRepository.traverse(continuationToken);
+      let itemsTotalProcess = result.resources.length;
+      let processCount = 1;
 
+      progressBar.start(itemsTotalProcess, 0);
       continuationToken = result.continuationToken;
       fs.appendFileSync('logToken.txt', continuationToken);
 
@@ -23,16 +35,8 @@ export default class InvoiceService {
           itemProcess.nroLote = parseInt(itemProcess.nroLote);
         }
 
-        console.log(`🚀 The item will be processed: ${JSON.stringify(itemProcess)}`);
-
-        const clinicaRecord = await this._clinicaRecordRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
-
-        console.log(`📄 Total documents clinicaRecord obtained: ${clinicaRecord.length}`);
-
-        if (!clinicaRecord.length) {
-          console.log(`🚫 Clinica record it does not have any record, we continue with the following query.`);
-          continue;
-        }
+        progressBar.increment();
+        progressBar.update(processCount++);
 
         const document = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
 
@@ -45,7 +49,7 @@ export default class InvoiceService {
 
         console.log('❤️ Data clínica record match with data document, adding data to memory');
 
-        emitData.push({ clinicaRecord, document });
+        emitData.push({ clinicaRecord: itemProcess, document });
       }
 
       if (emitData.length) {
@@ -60,6 +64,8 @@ export default class InvoiceService {
           console.log(`♻️ Worker cross invoice in process ${processId}`);
         });
       }
+
+      progressBar.stop();
     } while (continuationToken);
   }
 }

@@ -8,11 +8,11 @@ export default class ClinicaRecordRepository {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
 
     const querySpec = {
-      query: "SELECT c.nroLote, c.facturaNro FROM c WHERE c.estado = 'EXPEDIENTE_PENDIENTE'",
+      query: "SELECT * FROM c WHERE c.estado = 'EXPEDIENTE_PENDIENTE'",
       parameters: [],
     };
 
-    const data = await container.items.query(querySpec, { maxItemCount: 500, continuationToken }).fetchNext();
+    const data = await container.items.query(querySpec, { maxItemCount: 1000, continuationToken }).fetchNext();
 
     console.log(`📦 Data package process found: ${data?.resources?.length}`);
 

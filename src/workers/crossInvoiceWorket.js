@@ -14,7 +14,7 @@ async function workerProcess(data) {
 
   const { cosmosImpl } = await initConnect();
   const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_INVOICE });
-  const wd = processRunner(data, 30);
+  const wd = processRunner(data, 200);
   let processEnd = false;
 
   do {
@@ -22,7 +22,7 @@ async function workerProcess(data) {
 
     if (value) {
       for (let item of value) {
-        const clinicaRecord = item.clinicaRecord[0];
+        const clinicaRecord = item.clinicaRecord;
         const documents = item.document;
         const encuentros = [];
 
@@ -35,9 +35,7 @@ async function workerProcess(data) {
               urlArchivo: archivo.urlArchivo,
               urlArchivoSas: archivo.urlArchivoSas,
               estadoArchivo: archivo.estadoArchivo,
-              archivoBytes: archivo.archivoBytes,
               nroEncuentro: archivo.nroEncuentro,
-              bytes: archivo.bytes,
               existe: archivo.existe,
               tipoDocumentoId: archivo.tipoDocumentoId,
               tipoDocumentoDesc: archivo.tipoDocumentoDesc,
@@ -47,7 +45,8 @@ async function workerProcess(data) {
           }
 
           encuentros.push({
-            applicationId: document.applicationId || null,
+            mecanismoFacturacionId: clinicaRecord.mecanismoFacturacionId,
+            mecanismoFacturacionDesc: clinicaRecord.mecanismoFacturacionDesc,
             archivos,
             beneficio: document.beneficio,
             beneficioDesc: document.beneficioDesc,
@@ -112,8 +111,6 @@ async function workerProcess(data) {
           garanteDescripcion: clinicaRecord.garanteDescripcion,
           garanteId: clinicaRecord.garanteId,
           id: clinicaRecord.id,
-          mecanismoFacturacionDesc: clinicaRecord.mecanismoFacturacionDesc,
-          mecanismoFacturacionId: clinicaRecord.mecanismoFacturacionId,
           modoFacturacion: clinicaRecord.modoFacturacion,
           modoFacturacionId: clinicaRecord.modoFacturacionId,
           nroHistoriaClinica: clinicaRecord.nroHistoriaClinica,
