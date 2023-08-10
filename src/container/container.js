@@ -5,6 +5,7 @@ import pkg from '../../package.json';
 import config from './config';
 import server from './server';
 import CosmosImpl from './cloudConnectionCosmos.db';
+import StorageTableImpl from './cloudConnectionAzureStorage.table';
 import routes from '../routes/index';
 
 const container = createContainer();
@@ -13,6 +14,7 @@ container.register({
   config: asValue(config),
   server: asClass(server).singleton(),
   cosmosImpl: asClass(CosmosImpl).singleton(),
+  storageTableImpl: asClass(StorageTableImpl).singleton(),
   routes: asFunction(routes).singleton(),
 });
 

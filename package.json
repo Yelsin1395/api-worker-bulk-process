@@ -26,6 +26,7 @@
   "homepage": "https://github.com/Yelsin1395/arq-template-api-js#readme",
   "dependencies": {
     "@azure/cosmos": "^3.17.3",
+    "@azure/data-tables": "^13.2.2",
     "@azure/service-bus": "^7.9.0",
     "awilix": "^8.0.0",
     "cli-color": "^2.0.3",

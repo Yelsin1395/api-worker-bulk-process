@@ -1,0 +1,37 @@
+const { parentPort, workerData } = require('worker_threads');
+const clc = require('cli-color');
+const { v4: uuidv4 } = require('uuid');
+const { initConnect } = require('./cloudConnectionCosmosDb');
+const processRunner = require('../utils/processRunner.util');
+const processId = uuidv4();
+
+parentPort.postMessage(processId);
+
+const items = JSON.parse(Buffer.from(workerData.dataProcess).toString());
+
+async function workerProcess(items) {
+  const { cosmosImpl } = await initConnect();
+  const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_DOCUMENT });
+  const wd = processRunner(items, 100);
+  let processEnd = false;
+
+  do {
+    const { done, value } = wd.next();
+    if (value) {
+      for (let item of value) {
+        console.log(clc.yellowBright(`⌛ Data process number: ${item.id}`));
+        item = { ...item, historialDevolucion: [] };
+
+        await container.items.upsert(item);
+
+        console.log(clc.greenBright(`💾 The data is stored correctly`));
+      }
+    }
+
+    processEnd = done;
+  } while (!processEnd);
+
+  console.log(clc.bgCyanBright(`🏁 Process worker finished ${processId}`));
+}
+
+workerProcess(items);

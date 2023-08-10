@@ -28,7 +28,7 @@ export default class InvoiceService {
       continuationToken = result.continuationToken;
       
       if(continuationToken) {
-        fs.appendFileSync('logToken.txt', continuationToken);
+        fs.appendFileSync('logToken.txt', continuationToken);    
       }      
 
       const emitData = [];
