@@ -42,7 +42,7 @@ export default class DocumentService {
         if (!entity) {
           continue;
         }
-
+        
         if (entity.historialDevolucion.length === 1) {
           const [invoiceCurrent] = await this._clinicaRecordRepository.getRecordByLoteAndFactura(entity.nroLote, entity.facturaNro);
 
@@ -60,7 +60,7 @@ export default class DocumentService {
           }
         } else {
           console.log(clc.bgYellowBright('❗ It is a special case of double mechanism, which requires manual revision'));
-          fs.appendFileSync('mixed_cases.txt', entity);
+          fs.appendFileSync('mixed_cases.txt', JSON.stringify(entity));
         }
       }
     }
