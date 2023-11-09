@@ -8,7 +8,7 @@ export default class ClinicaRecordRepository {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
 
     const querySpec = {
-      query: "SELECT * FROM c WHERE c.estado = 'EXPEDIENTE_PENDIENTE'",
+      query: "SELECT * FROM c WHERE c.estado = 'EXPEDIENTE_GENERADO'",
       parameters: [],
     };
 

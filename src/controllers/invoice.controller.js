@@ -2,14 +2,14 @@ export default class InvoiceController {
   constructor({ invoiceService }) {
     this._invoiceService = invoiceService;
 
-    this.processCrossInvoice = this.processCrossInvoice.bind(this);
+    this.processMigrateInvoice = this.processMigrateInvoice.bind(this);
   }
 
-  async processCrossInvoice(req, res) {
-    this._invoiceService.processCrossInvoice();
+  async processMigrateInvoice(req, res) {
+    this._invoiceService.processMigrateInvoice();
     return res.status(200).send({
       status: 200,
-      message: 'Data process cross invoice',
+      message: 'Data process migrate invoice',
     });
   }
 }

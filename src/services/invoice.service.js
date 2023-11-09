@@ -9,7 +9,7 @@ export default class InvoiceService {
     this._documentRepository = documentRepository;
   }
 
-  async processCrossInvoice() {
+  async processMigrateInvoice() {
     let continuationToken = null;
 
     const progressBar = new cliProgress.SingleBar({
@@ -41,18 +41,19 @@ export default class InvoiceService {
         progressBar.increment();
         progressBar.update(processCount++);
 
-        const document = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
+        // const document = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
 
-        console.log(`📄 Total documents obtained: ${document.length}`);
+        // console.log(`📄 Total documents obtained: ${document.length}`);
 
-        if (!document.length) {
-          console.log('🚫 Document it does not have any record, we continue with the following query.');
-          continue;
-        }
+        // if (!document.length) {
+        //   console.log('🚫 Document it does not have any record, we continue with the following query.');
+        //   continue;
+        // }
 
-        console.log('❤️ Data clínica record match with data document, adding data to memory');
+        // console.log('❤️ Data clínica record match with data document, adding data to memory');
 
-        emitData.push({ clinicaRecord: itemProcess, document });
+        // emitData.push({ clinicaRecord: itemProcess, document });
+        emitData.push({ clinicaRecord: itemProcess });
       }
 
       if (emitData.length) {
@@ -69,6 +70,6 @@ export default class InvoiceService {
       }
 
       progressBar.stop();
-    } while (continuationToken);
+    } while (false);
   }
 }

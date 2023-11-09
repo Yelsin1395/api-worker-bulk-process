@@ -1,11 +1,12 @@
 const { CosmosClient } = require('@azure/cosmos');
+const config = require('../config.worker');
 
 async function initConnect() {
   const cosmosClient = new CosmosClient({
-    endpoint: process.env.COSMOS_ENDPOINT,
-    key: process.env.COSMOS_KEY,
+    endpoint: config.COSMOS_ENDPOINT,
+    key: config.COSMOS_KEY,
   });
-  const { database } = await cosmosClient.databases.createIfNotExists({ id: process.env.COSMOS_CONTAINER });
+  const { database } = await cosmosClient.databases.createIfNotExists({ id: config.COSMOS_CONTAINER });
 
   return {
     cosmosImpl: database,
