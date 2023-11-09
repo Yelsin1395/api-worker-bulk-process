@@ -23,10 +23,9 @@ async function workerProcess(data) {
     const { done, value } = wd.next();
 
     if (value) {
+      await new Promise(resolve => setTimeout(resolve, 1500));
       for (let item of value) {
-        const clinicaRecord = item.clinicaRecord;
-
-        console.log(JSON.stringify(clinicaRecord));
+        const clinicaRecord = item;
 
         const payload = {
           id: clinicaRecord.facturaNro,

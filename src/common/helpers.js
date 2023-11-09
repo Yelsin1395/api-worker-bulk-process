@@ -72,5 +72,5 @@ function normalizeTypeInvoice(affect, unaffected) {
 module.exports = {
   normalizeDate,
   normalizeDateTime,
-  normalizeTypeInvoice,
+  normalizeTypeInvoice
 };

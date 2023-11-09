@@ -1,7 +1,7 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
-import fs from 'fs';
+import fs from 'fs';;
 
 export default class InvoiceService {
   constructor({ clinicaRecordRepository, documentRepository }) {
@@ -20,41 +20,46 @@ export default class InvoiceService {
     });
 
     do {
+      await new Promise(resolve => setTimeout(resolve, 3000));
       const result = await this._clinicaRecordRepository.traverse(continuationToken);
       let itemsTotalProcess = result.resources.length;
       let processCount = 1;
 
       progressBar.start(itemsTotalProcess, 0);
       continuationToken = result.continuationToken;
-      
-      if(continuationToken) {
-        fs.appendFileSync('logToken.txt', continuationToken);    
-      }      
 
-      const emitData = [];
+      console.log({ continuationToken });
 
-      for (const itemProcess of result.resources) {
-        if (typeof itemProcess.nroLote === 'string') {
-          itemProcess.nroLote = parseInt(itemProcess.nroLote);
-        }
+      // if(continuationToken) {
+      //   fs.appendFileSync('logToken.txt', continuationToken);
+      // }
 
-        progressBar.increment();
-        progressBar.update(processCount++);
+      const emitData = result.resources;
 
-        // const document = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
+      // for (const itemProcess of result.resources) {
+      //   if (typeof itemProcess.nroLote === 'string') {
+      //     itemProcess.nroLote = parseInt(itemProcess.nroLote);
+      //   }
 
-        // console.log(`📄 Total documents obtained: ${document.length}`);
+      //   progressBar.increment();
+      //   progressBar.update(processCount++);
 
-        // if (!document.length) {
-        //   console.log('🚫 Document it does not have any record, we continue with the following query.');
-        //   continue;
-        // }
+      //   const document = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
 
-        // console.log('❤️ Data clínica record match with data document, adding data to memory');
+      //   console.log(`📄 Total documents obtained: ${document.length}`);
 
-        // emitData.push({ clinicaRecord: itemProcess, document });
-        emitData.push({ clinicaRecord: itemProcess });
-      }
+      //   if (!document.length) {
+      //     console.log('🚫 Document it does not have any record, we continue with the following query.');
+      //     continue;
+      //   }
+
+      //   console.log('❤️ Data clínica record match with data document, adding data to memory');
+
+      //   emitData.push({ clinicaRecord: itemProcess, document });
+      //   emitData.push({ clinicaRecord: itemProcess });
+      // }
+
+      // emitData.push({ clinicaRecord: result.resources });
 
       if (emitData.length) {
         const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
@@ -71,5 +76,7 @@ export default class InvoiceService {
 
       progressBar.stop();
     } while (continuationToken);
+
+    console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
 }
