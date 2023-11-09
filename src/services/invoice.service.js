@@ -70,6 +70,6 @@ export default class InvoiceService {
       }
 
       progressBar.stop();
-    } while (false);
+    } while (continuationToken);
   }
 }

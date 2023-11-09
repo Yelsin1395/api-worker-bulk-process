@@ -27,7 +27,7 @@ async function workerProcess(data) {
         const clinicaRecord = item.clinicaRecord;
 
         console.log(JSON.stringify(clinicaRecord));
-        
+
         const payload = {
           id: clinicaRecord.facturaNro,
           nroFactura: clinicaRecord.facturaNro,
@@ -67,7 +67,7 @@ async function workerProcess(data) {
           },
           garante: {
             id: clinicaRecord.garanteId,
-            descripcion: clinicaRecord.modoFacturacion,
+            descripcion: clinicaRecord.garanteDescripcion,
           },
           beneficio: {
             id: clinicaRecord.beneficioId,
