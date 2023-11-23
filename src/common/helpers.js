@@ -40,7 +40,19 @@ function normalizeDateTime(date) {
     return normalizeCurrentDateTimeUtc();
   }
 
-  const separateDate = date.split('/');
+  let separateDate = [];
+
+  if (date.split('/').length === 3) {
+    separateDate = date.split('/');
+  }
+
+  if (date.split('-').length === 3) {
+    separateDate = date.split('-');
+  }
+
+  if (separateDate.length === 0) {
+    return normalizeCurrentDateTimeUtc();
+  }
 
   const datetime = new Date(separateDate[2], separateDate[1] - 1, separateDate[0]);
   const formatDateTimeUtc = datetime.toISOString();
@@ -72,5 +84,5 @@ function normalizeTypeInvoice(affect, unaffected) {
 module.exports = {
   normalizeDate,
   normalizeDateTime,
-  normalizeTypeInvoice
+  normalizeTypeInvoice,
 };

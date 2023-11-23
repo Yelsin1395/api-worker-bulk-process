@@ -1,15 +1,30 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
-import fs from 'fs';
 
-export default class InvoiceService {
+export default class MettingsService {
   constructor({ clinicaRecordRepository, documentRepository }) {
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._documentRepository = documentRepository;
   }
 
-  async processMigrateInvoice() {
+  discardPendingFile(files) {
+    const validFiles = [];
+
+    for (const file of files) {
+      if (file.estadoArchivo !== 'PENDIENTE') {
+        if (file.archivoBytes?.length) {
+          file.archivoBytes = '';
+        }
+
+        validFiles.push(file);
+      }
+    }
+
+    return validFiles;
+  }
+
+  async processMigrateMettings() {
     let continuationToken = null;
 
     const progressBar = new cliProgress.SingleBar({
@@ -21,64 +36,43 @@ export default class InvoiceService {
 
     do {
       await new Promise((resolve) => setTimeout(resolve, 3000));
-      const result = await this._clinicaRecordRepository.traverse(continuationToken);
+      const result = await this._documentRepository.traverse(continuationToken);
+
       let itemsTotalProcess = result.resources.length;
       let processCount = 1;
 
       progressBar.start(itemsTotalProcess, 0);
       continuationToken = result.continuationToken;
 
-      console.log({ continuationToken });
-
-      // if(continuationToken) {
-      //   fs.appendFileSync('logToken.txt', continuationToken);
-      // }
+      console.log(`🔓 Last process token: ${continuationToken}`);
 
       const emitData = [];
 
       for (const itemProcess of result.resources) {
-        // if (typeof itemProcess.nroLote === 'string') {
-        //   itemProcess.nroLote = parseInt(itemProcess.nroLote);
-        // }
         progressBar.increment();
         progressBar.update(processCount++);
 
-        const documents = await this._documentRepository.getRecordByLoteAndFactura(itemProcess.nroLote, itemProcess.facturaNro);
-        console.log(`📄 Total documents obtained: ${documents.length}`);
+        itemProcess.archivos = this.discardPendingFile(itemProcess.archivos);
 
-        if (!documents.length) {
-          console.log('🚫 Document it does not have any record, we continue with the following query.');
-          continue;
-        }
-
-        console.log('❤️ Data clínica record match with data document, adding data to memory');
-
-        emitData.push({ clinicaRecord: itemProcess, documents });
+        emitData.push(itemProcess);
       }
 
       if (emitData.length) {
         const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
 
         console.log('📨 Send data process...');
-        const worker = new Worker('./src/workers/crossInvoiceWorket.js', {
-          workerData: { dataProcess },
-        });
 
-        const workerMettings = new Worker('./src/workers/mettingsMigrateWorker.js', {
+        const worker = new Worker('./src/workers/mettingsMigrateWorker.js', {
           workerData: { dataProcess },
         });
 
         worker.once('message', (processId) => {
           console.log(`♻️ Worker cross invoice in process ${processId}`);
         });
-
-        workerMettings.once('message', (processId) => {
-          console.log(`♻️ Worker cross invoice in process ${processId}`);
-        });
       }
 
       progressBar.stop();
-    } while (false);
+    } while (continuationToken);
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }

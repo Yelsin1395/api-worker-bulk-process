@@ -4,6 +4,24 @@ export default class DocumentRepository {
     this._cosmosImpl = cosmosImpl;
   }
 
+  async traverse(continuationToken) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_DOCUMENT });
+
+    const querySpec = {
+      query: "SELECT * FROM c WHERE c.nroLote != 0 AND c.facturaNro != 0 AND ARRAY_CONTAINS(c.archivos, {'estadoArchivo': 'OK'}, true) AND c.sede <> null and c.sedeDesc <> null",
+      parameters: [],
+    };
+
+    const data = await container.items.query(querySpec, { maxItemCount: this._config.MAX_ITEM_COUNT_DOCUMENT, continuationToken }).fetchNext();
+
+    console.log(`📦 Data package process found: ${data?.resources?.length}`);
+
+    return {
+      resources: data.resources,
+      continuationToken: data.continuationToken,
+    };
+  }
+
   async searchBasic(filter) {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_DOCUMENT });
 
@@ -68,7 +86,7 @@ export default class DocumentRepository {
         },
       ],
     };
-
+    
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }

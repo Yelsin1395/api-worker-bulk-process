@@ -23,9 +23,9 @@ async function workerProcess(data) {
     const { done, value } = wd.next();
 
     if (value) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       for (let item of value) {
-        const clinicaRecord = item;
+        const { clinicaRecord, documents } = item;
 
         const payload = {
           id: clinicaRecord.facturaNro,
@@ -75,6 +75,10 @@ async function workerProcess(data) {
           origenServicio: {
             id: clinicaRecord.origenServicioId,
             descripcion: clinicaRecord.origenServicioDesc,
+          },
+          sede: {
+            id: documents.length && documents[0]?.sede,
+            descripcion: documents.length && documents[0]?.sedeDesc,
           },
           encuentros: clinicaRecord.nroEncuentro,
           comprobantes: [],
