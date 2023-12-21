@@ -1,10 +1,10 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
-import fs from 'fs';
 
 export default class MettingsService {
-  constructor({ clinicaRecordRepository, documentRepository }) {
+  constructor({ loggerRepository, clinicaRecordRepository, documentRepository }) {
+    this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._documentRepository = documentRepository;
   }
@@ -48,7 +48,7 @@ export default class MettingsService {
 
       console.log(`🔓 Last process token: ${continuationToken}`);
       if (continuationToken) {
-        fs.appendFileSync('temp/logTokenMetting.txt', JSON.stringify({ continuationToken, date: new Date().toISOString() }));
+        this._loggerRepository.create('METTING_SERVICE', continuationToken);
       }
 
       for (const document of result.resources) {

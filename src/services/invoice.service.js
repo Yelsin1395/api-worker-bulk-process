@@ -1,10 +1,10 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
-import fs from 'fs';
 
 export default class InvoiceService {
-  constructor({ clinicaRecordRepository, documentRepository }) {
+  constructor({ loggerRepository, clinicaRecordRepository, documentRepository }) {
+    this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._documentRepository = documentRepository;
   }
@@ -32,7 +32,7 @@ export default class InvoiceService {
 
       console.log(`🔓 Last process token: ${continuationToken}`);
       if (continuationToken) {
-        fs.appendFileSync('temp/logTokenInvoice.txt', { continuationToken, date: new Date().toISOString() });
+        this._loggerRepository.create('INVOICE_SERVICE', continuationToken);
       }
 
       for (const clinicaRecord of result.resources) {
@@ -61,17 +61,9 @@ export default class InvoiceService {
           workerData: { dataProcess },
         });
 
-        // const workerMettings = new Worker('./src/workers/mettingsMigrateWorker.js', {
-        //   workerData: { dataProcess },
-        // });
-
         worker.once('message', (processId) => {
           console.log(`♻️ Worker cross invoice in process ${processId}`);
         });
-
-        // workerMettings.once('message', (processId) => {
-        //   console.log(`♻️ Worker mettings in process ${processId}`);
-        // });
       }
 
       progressBar.stop();

@@ -5,8 +5,9 @@ import helpers from '../common/helpers';
 const clc = require('cli-color');
 
 export default class UploadHistoryService {
-  constructor({ config, clinicaRecordRepository, invoiceRepository, mettingRepository, storageSftpImpl }) {
+  constructor({ config, loggerRepository, clinicaRecordRepository, invoiceRepository, mettingRepository, storageSftpImpl }) {
     this._config = config;
+    this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._invoiceRepository = invoiceRepository;
     this._mettingRepository = mettingRepository;
@@ -35,7 +36,10 @@ export default class UploadHistoryService {
       progressBar.start(itemsTotalProcess, 0);
       continuationToken = result.continuationToken;
 
-      console.log({ continuationToken });
+      console.log(`🔓 Last process token: ${continuationToken}`);
+      if (continuationToken) {
+        this._loggerRepository.create('UPLOADHISTORY_SERVICE', continuationToken);
+      }
 
       const emitData = [];
 

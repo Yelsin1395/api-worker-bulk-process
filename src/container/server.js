@@ -2,16 +2,18 @@ import express from 'express';
 import clc from 'cli-color';
 
 export default class Server {
-  constructor({ pkg, config, cosmosImpl, routes }) {
+  constructor({ pkg, config, cosmosImpl, mongoImpl, routes }) {
     this._pkg = pkg;
     this._config = config;
     this._cosmosImpl = cosmosImpl;
+    this._mongoImpl = mongoImpl;
     this._express = express().use(routes);
   }
 
   async start() {
     const PORT = this._config.PORT;
     await this._cosmosImpl.initConnect();
+    await this._mongoImpl.initConnect();
     return this._express.listen(PORT, () => {
       if (process.env.NODE_ENV !== 'production') {
         const route = () => `http://localhost:${PORT}`;
