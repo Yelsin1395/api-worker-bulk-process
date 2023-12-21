@@ -6,7 +6,7 @@ import compression from 'compression';
 import 'express-async-error';
 import { errorMiddleware, notFoundMiddleware } from '../middlewares/exception.middleware';
 
-export default function ({ homeRoutes, clinicaRecordRoutes, invoiceRoutes, documentRoutes, mettingsRoutes }) {
+export default function ({ homeRoutes, clinicaRecordRoutes, invoiceRoutes, documentRoutes, mettingsRoutes, devolutionsRoutes, uploadHistoryRoutes }) {
   const router = express.Router();
   const apiRoutes = express.Router();
 
@@ -32,6 +32,8 @@ export default function ({ homeRoutes, clinicaRecordRoutes, invoiceRoutes, docum
   apiRoutes.use('/invoice', invoiceRoutes);
   apiRoutes.use('/document', documentRoutes);
   apiRoutes.use('/mettings', mettingsRoutes);
+  apiRoutes.use('/devolutions', devolutionsRoutes);
+  apiRoutes.use('/upload-history', uploadHistoryRoutes);
 
   return router;
 }

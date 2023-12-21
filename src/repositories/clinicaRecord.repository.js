@@ -8,7 +8,25 @@ export default class ClinicaRecordRepository {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
 
     const querySpec = {
-      query: "SELECT * FROM c WHERE c.estado = 'EXPEDIENTE_GENERADO'",
+      query: 'SELECT * FROM c',
+      parameters: [],
+    };
+
+    const data = await container.items.query(querySpec, { maxItemCount: this._config.MAX_ITEM_COUNT_CLINICARECORD, continuationToken }).fetchNext();
+
+    console.log(`📦 Data package process found: ${data?.resources?.length}`);
+
+    return {
+      resources: data.resources,
+      continuationToken: data.continuationToken,
+    };
+  }
+
+  async getAllExpedientNotGenerate(continuationToken) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
+
+    const querySpec = {
+      query: "SELECT * FROM c WHERE c.estado != 'EXPEDIENTE_GENERADO' AND c.nroLote != 0 AND c._ts >= 1680307200 AND c._ts <= 1703116799",
       parameters: [],
     };
 

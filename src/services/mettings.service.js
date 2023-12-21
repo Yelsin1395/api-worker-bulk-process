@@ -1,6 +1,7 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
+import fs from 'fs';
 
 export default class MettingsService {
   constructor({ clinicaRecordRepository, documentRepository }) {
@@ -35,26 +36,37 @@ export default class MettingsService {
     });
 
     do {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
       const result = await this._documentRepository.traverse(continuationToken);
 
       let itemsTotalProcess = result.resources.length;
       let processCount = 1;
+      const emitData = [];
 
       progressBar.start(itemsTotalProcess, 0);
       continuationToken = result.continuationToken;
 
       console.log(`🔓 Last process token: ${continuationToken}`);
+      if (continuationToken) {
+        fs.appendFileSync('temp/logTokenMetting.txt', JSON.stringify({ continuationToken, date: new Date().toISOString() }));
+      }
 
-      const emitData = [];
-
-      for (const itemProcess of result.resources) {
+      for (const document of result.resources) {
         progressBar.increment();
         progressBar.update(processCount++);
 
-        itemProcess.archivos = this.discardPendingFile(itemProcess.archivos);
+        const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+        console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
 
-        emitData.push(itemProcess);
+        if (clinicaRecords.length) {
+          console.log('❤️ Data clínica record match with data document, adding data to memory');
+
+          emitData.push({ document, clinicaRecord: clinicaRecords[0] });
+        } else {
+          console.log('🚫 Document it does not have any record, we continue with the following query.');
+
+          emitData.push({ document, clinicaRecord: null });
+        }
       }
 
       if (emitData.length) {
@@ -67,7 +79,7 @@ export default class MettingsService {
         });
 
         worker.once('message', (processId) => {
-          console.log(`♻️ Worker cross invoice in process ${processId}`);
+          console.log(`♻️ Worker cross metting in process ${processId}`);
         });
       }
 

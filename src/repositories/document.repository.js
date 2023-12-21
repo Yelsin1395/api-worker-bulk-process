@@ -8,7 +8,7 @@ export default class DocumentRepository {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_DOCUMENT });
 
     const querySpec = {
-      query: "SELECT * FROM c WHERE c.nroLote != 0 AND c.facturaNro != 0 AND ARRAY_CONTAINS(c.archivos, {'estadoArchivo': 'OK'}, true) AND c.sede <> null and c.sedeDesc <> null",
+      query: 'SELECT * FROM c',
       parameters: [],
     };
 
@@ -31,7 +31,7 @@ export default class DocumentRepository {
     };
 
     this._setSearchCondition(querySpec, filter);
-    
+
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }
@@ -86,7 +86,7 @@ export default class DocumentRepository {
         },
       ],
     };
-    
+
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }

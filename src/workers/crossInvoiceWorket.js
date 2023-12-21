@@ -3,8 +3,8 @@ const clc = require('cli-color');
 const { v4: uuidv4 } = require('uuid');
 const { initConnect } = require('./cloudConnectionCosmosDb');
 const processRunner = require('../utils/processRunner.util');
-const config = require('../config.worker');
 const helpers = require('../common/helpers');
+const setInput = require('../common/setInput');
 const processId = uuidv4();
 
 parentPort.postMessage(processId);
@@ -15,8 +15,8 @@ async function workerProcess(data) {
   console.log(clc.yellowBright(`⌛ Processing data`));
 
   const { cosmosImpl } = await initConnect();
-  const { container } = await cosmosImpl.containers.createIfNotExists({ id: config.COSMOS_TABLE_INVOICE });
-  const wd = processRunner(data, config.MAX_ITEM_PROCESS_WORKER);
+  const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_INVOICE });
+  const wd = processRunner(data, process.env.MAX_ITEM_PROCESS_WORKER);
   let processEnd = false;
 
   do {
@@ -24,63 +24,64 @@ async function workerProcess(data) {
 
     if (value) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
+      
       for (let item of value) {
-        const { clinicaRecord, documents } = item;
+        const { clinicaRecord, document } = item;
 
         const payload = {
           id: clinicaRecord.facturaNro,
           nroFactura: clinicaRecord.facturaNro,
           nroLote: String(clinicaRecord.nroLote),
-          estadoExpediente: clinicaRecord.estado,
-          fechaFacturacion: helpers.normalizeDate(clinicaRecord.facturaFecha),
-          importeFacturacion: clinicaRecord.facturaImporte,
+          estadoExpediente: setInput.string(clinicaRecord.estado),
+          fechaFacturacion: helpers.normalizeDateTime(clinicaRecord.facturaFecha),
+          importeFacturacion: setInput.number(clinicaRecord.facturaImporte),
           facturaAsociada: helpers.normalizeTypeInvoice(clinicaRecord.facturaNroAfecta, clinicaRecord.facturaNroInafecta),
-          urlAnexoDetallado: clinicaRecord.archivoAnexoDet,
-          urlAnexoDetalladoSas: clinicaRecord.archivoAnexoDetSas,
-          urlFactura: clinicaRecord.facturaArchivo,
-          urlFacturaSas: clinicaRecord.facturaArchivoSas,
-          coCentro: clinicaRecord.coCentro,
-          coEstructura: clinicaRecord.coEstru,
-          nroHistoriaClinica: clinicaRecord.nroHistoriaClinica,
-          nroRemesa: clinicaRecord.nroRemesa,
-          origenSistema: clinicaRecord.origen,
-          estadoFacturacion: clinicaRecord.estadoFactura,
-          fechaAtencion: clinicaRecord.fechaAtencion,
+          urlAnexoDetallado: setInput.string(clinicaRecord.archivoAnexoDet),
+          urlAnexoDetalladoSas: setInput.string(clinicaRecord.archivoAnexoDetSas),
+          urlFactura: setInput.string(clinicaRecord.facturaArchivo),
+          urlFacturaSas: setInput.string(clinicaRecord.facturaArchivoSas),
+          coCentro: setInput.string(clinicaRecord.coCentro),
+          coEstructura: setInput.string(clinicaRecord.coEstru),
+          nroHistoriaClinica: setInput.string(clinicaRecord.nroHistoriaClinica),
+          nroRemesa: setInput.number(clinicaRecord.nroRemesa),
+          origenSistema: setInput.string(clinicaRecord.origen),
+          estadoFacturacion: setInput.string(clinicaRecord.estadoFactura),
+          fechaAtencion: helpers.normalizeDateTime(clinicaRecord.fechaAtencion, 2),
           paciente: {
-            apellidoPaterno: clinicaRecord.pacienteApellidoPaterno,
-            apellidoMaterno: clinicaRecord.pacienteApellidoMaterno,
-            nombre: clinicaRecord.pacienteNombre,
+            apellidoPaterno: setInput.string(clinicaRecord.pacienteApellidoPaterno),
+            apellidoMaterno: setInput.string(clinicaRecord.pacienteApellidoMaterno),
+            nombre: setInput.string(clinicaRecord.pacienteNombre),
             documentoIdentidad: {
-              id: clinicaRecord.pacienteTipoDocIdentId,
+              id: setInput.string(clinicaRecord.pacienteTipoDocIdentId),
               descripcion: clinicaRecord.pacienteTipoDocIdentId === '1' ? 'D.N.I' : clinicaRecord.pacienteTipoDocIdentDesc,
-              numero: clinicaRecord.pacienteNroDocIdent,
+              numero: setInput.string(clinicaRecord.pacienteNroDocIdent),
             },
           },
           modoFacturacion: {
-            id: clinicaRecord.modoFacturacionId,
-            descripcion: clinicaRecord.modoFacturacion,
+            id: setInput.string(clinicaRecord.modoFacturacionId),
+            descripcion: setInput.string(clinicaRecord.modoFacturacion),
           },
           mecanismoFacturacion: {
-            id: clinicaRecord.mecanismoFacturacionId,
-            descripcion: clinicaRecord.mecanismoFacturacionDesc,
+            id: setInput.string(clinicaRecord.mecanismoFacturacionId),
+            descripcion: setInput.string(clinicaRecord.mecanismoFacturacionDesc),
           },
           garante: {
-            id: clinicaRecord.garanteId,
-            descripcion: clinicaRecord.garanteDescripcion,
+            id: setInput.string(clinicaRecord.garanteId),
+            descripcion: setInput.string(clinicaRecord.garanteDescripcion),
           },
           beneficio: {
-            id: clinicaRecord.beneficioId,
-            descripcion: clinicaRecord.beneficioDescripcion,
+            id: setInput.string(clinicaRecord.beneficioId),
+            descripcion: setInput.string(clinicaRecord.beneficioDescripcion),
           },
           origenServicio: {
-            id: clinicaRecord.origenServicioId,
-            descripcion: clinicaRecord.origenServicioDesc,
+            id: setInput.string(clinicaRecord.origenServicioId),
+            descripcion: setInput.string(clinicaRecord.origenServicioDesc),
           },
           sede: {
-            id: documents.length && documents[0]?.sede,
-            descripcion: documents.length && documents[0]?.sedeDesc,
+            id: setInput.string(document?.sede),
+            descripcion: setInput.string(document?.sedeDesc),
           },
-          encuentros: clinicaRecord.nroEncuentro,
+          encuentros: setInput.array(clinicaRecord?.nroEncuentro),
           comprobantes: [],
           tipoComprobante: '01',
           fechaRegistro: helpers.normalizeDateTime(clinicaRecord.facturaFecha),
@@ -96,7 +97,7 @@ async function workerProcess(data) {
     processEnd = done;
   } while (!processEnd);
 
-  console.log(clc.bgCyanBright(`🏁 Process worker finished ${processId}`));
+  console.log(clc.bgCyanBright(`🏁 Process worker cross invoice finished ${processId}`));
 }
 
 workerProcess(result);

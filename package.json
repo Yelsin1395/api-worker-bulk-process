@@ -28,7 +28,9 @@
     "@azure/cosmos": "^3.17.3",
     "@azure/data-tables": "^13.2.2",
     "@azure/service-bus": "^7.9.0",
+    "@azure/storage-blob": "^12.17.0",
     "awilix": "^8.0.0",
+    "axios": "^1.6.2",
     "cli-color": "^2.0.3",
     "cli-progress": "^3.12.0",
     "compression": "^1.7.4",
@@ -38,7 +40,9 @@
     "express-async-error": "0.0.2",
     "helmet": "^6.0.1",
     "morgan": "^1.10.0",
-    "uuid": "^9.0.0"
+    "ssh2-sftp-client": "^9.1.0",
+    "uuid": "^9.0.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
   },
   "devDependencies": {
     "@babel/cli": "^7.21.0",
@@ -46,6 +50,6 @@
     "@babel/node": "^7.20.7",
     "@babel/preset-env": "^7.20.2",
     "dotenv": "^16.0.3",
-    "nodemon": "^2.0.21"
+    "nodemon": "^3.0.2"
   }
 }

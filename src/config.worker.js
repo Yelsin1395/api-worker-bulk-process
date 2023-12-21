@@ -10,4 +10,6 @@ module.exports = {
   COSMOS_TABLE_EXPEDIENTEDIGITALTEST: 'documenttest',
   MAX_ITEM_COUNT_CLINICARECORD: 100,
   MAX_ITEM_PROCESS_WORKER: 100,
+  AZURE_STORAGE_CONNECTION_STRING:
+    'DefaultEndpointsProtocol=https;AccountName=brmexpdigqa;AccountKey=e4/ESkxx6hYMIBur91gq+u8R1C4LCH/t+J7Sft8XAguxKXli65pne9LY4YMqx0EoCXkDJyBJguRGFaHuWpLKIA==;EndpointSuffix=core.windows.net',
 };

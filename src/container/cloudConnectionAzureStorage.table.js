@@ -6,7 +6,7 @@ export default class StorageTableImpl {
   }
 
   connect(tableName) {
-    const tableClient = TableClient.fromConnectionString(this._config.AZURE_ACCOUNT_CONNECTION_STRING, tableName);
+    const tableClient = TableClient.fromConnectionString(this._config.AZURE_STORAGE_CONNECTION_STRING, tableName);
     return tableClient;
   }
 }

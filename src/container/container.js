@@ -6,6 +6,8 @@ import config from './config';
 import server from './server';
 import CosmosImpl from './cloudConnectionCosmos.db';
 import StorageTableImpl from './cloudConnectionAzureStorage.table';
+import StorageBlobImpl from './cloudConnectionAzureStorage.blob';
+import StorageSftpImpl from './cloudConnection.sftp';
 import routes from '../routes/index';
 
 const container = createContainer();
@@ -15,6 +17,8 @@ container.register({
   server: asClass(server).singleton(),
   cosmosImpl: asClass(CosmosImpl).singleton(),
   storageTableImpl: asClass(StorageTableImpl).singleton(),
+  storageBlobImpl: asClass(StorageBlobImpl).singleton(),
+  storageSftpImpl: asClass(StorageSftpImpl).singleton(),
   routes: asFunction(routes).singleton(),
 });
 
