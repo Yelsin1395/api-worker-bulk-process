@@ -55,19 +55,16 @@ export default class MettingsService {
         progressBar.increment();
         progressBar.update(processCount++);
 
-        if (document.nroLote !== 0 && document.facturaNro !== '0') {
-          const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
-          console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
-        }
-
-        if (clinicaRecords.length) {
-          console.log('❤️ Data clínica record match with data document, adding data to memory');
-
-          emitData.push({ document, clinicaRecord: clinicaRecords[0] });
-        } else {
+        if (document.nroLote === 0 && document.facturaNro === '0') {
           console.log('🚫 Document it does not have any record, we continue with the following query.');
-
           emitData.push({ document, clinicaRecord: null });
+        } else {
+          const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+
+          if (clinicaRecords.length) {
+            console.log('❤️ Data clínica record match with data document, adding data to memory');
+            emitData.push({ document, clinicaRecord: clinicaRecords[0] });
+          }
         }
       }
 
