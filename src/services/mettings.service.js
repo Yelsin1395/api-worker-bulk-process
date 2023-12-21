@@ -55,8 +55,10 @@ export default class MettingsService {
         progressBar.increment();
         progressBar.update(processCount++);
 
-        const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
-        console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
+        if (document.nroLote !== 0 && document.facturaNro !== '0') {
+          const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+          console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
+        }
 
         if (clinicaRecords.length) {
           console.log('❤️ Data clínica record match with data document, adding data to memory');
