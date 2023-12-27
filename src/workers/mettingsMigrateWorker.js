@@ -80,7 +80,7 @@ async function workerProcess(data) {
     const { done, value } = wd.next();
 
     if (value) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       for (let item of value) {
         const { document, clinicaRecord } = item;
@@ -130,12 +130,13 @@ async function workerProcess(data) {
             id: setInput.string(document.codigoServicioOrigen),
             descripcion: setInput.string(document.origenServicio),
           },
+          origenSistema: setInput.string(document.origenDescripcion),
           fechaAtencion: helpers.normalizeDateTime(document.fechaAtencion, 2),
           fechaEfectivaOrden: document.fechaEfectivaOrden ? helpers.normalizeDateTime(document.fechaEfectivaOrden) : null,
           fechaMensaje: document.fechaMensaje ? helpers.normalizeDateTime(document.fechaMensaje) : null,
           archivos,
-          historialDevolucion: document.historialDevolucion ? normalizeHistoryDevolutions(document.historialDevolucion) : [],
-          usuario: document.userName ?? null,
+          historialDevoluciones: document.historialDevolucion ? normalizeHistoryDevolutions(document.historialDevolucion) : [],
+          usuario: setInput.string(document.userName ?? null),
           fechaRegistro: helpers.normalizeDateTime(document.fechaAtencion, 2),
           fechaModificacion: helpers.normalizeDateTime(document.fechaAtencion, 2),
         };
