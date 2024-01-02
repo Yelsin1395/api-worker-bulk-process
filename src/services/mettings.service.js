@@ -36,7 +36,7 @@ export default class MettingsService {
     });
 
     do {
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const result = await this._documentRepository.traverse(continuationToken);
 
       let itemsTotalProcess = result.resources.length;
@@ -56,14 +56,18 @@ export default class MettingsService {
         progressBar.update(processCount++);
 
         if (document.nroLote === 0 && document.facturaNro === '0') {
-          console.log('🚫 Document it does not have any record, we continue with the following query.');
+          console.log('🚫 Document is nrLote 0 and nroFactura 0.');
           emitData.push({ document, clinicaRecord: null });
         } else {
           const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+          console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
 
           if (clinicaRecords.length) {
             console.log('❤️ Data clínica record match with data document, adding data to memory');
             emitData.push({ document, clinicaRecord: clinicaRecords[0] });
+          } else {
+            console.log('🚫 Document it does not have any record, we continue with the following query.');
+            emitData.push({ document, clinicaRecord: null });
           }
         }
       }
@@ -86,5 +90,90 @@ export default class MettingsService {
     } while (continuationToken);
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
+  }
+
+  async processMigrateByLote(nroLote) {
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+
+    const result = await this._documentRepository.getAllByNroLote(nroLote);
+
+    let itemsTotalProcess = result.length;
+    let processCount = 1;
+    const emitData = [];
+
+    progressBar.start(itemsTotalProcess, 0);
+
+    for (const document of result) {
+      progressBar.increment();
+      progressBar.update(processCount++);
+
+      const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+      console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
+
+      if (clinicaRecords.length) {
+        console.log('❤️ Data clínica record match with data document, adding data to memory');
+        emitData.push({ document, clinicaRecord: clinicaRecords[0] });
+      } else {
+        console.log('🚫 Document it does not have any record, we continue with the following query.');
+        emitData.push({ document, clinicaRecord: null });
+      }
+    }
+
+    if (emitData.length) {
+      const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+      console.log('📨 Send data process...');
+
+      const worker = new Worker('./src/workers/mettingsMigrateWorker.js', {
+        workerData: { dataProcess },
+      });
+
+      worker.once('message', (processId) => {
+        console.log(`♻️ Worker cross metting in process ${processId}`);
+      });
+    }
+
+    progressBar.stop();
+  }
+
+  async processMigrateByMetting() {
+    const mettings = [];
+    const emitData = [];
+
+    for (const metting of mettings) {
+      const documents = await this._documentRepository.getAllByMetting(metting);
+
+      for (const document of documents) {
+        const clinicaRecords = await this._clinicaRecordRepository.getRecordByLoteAndFactura(document.nroLote, document.facturaNro);
+        console.log(`📄 Total documents obtained: ${clinicaRecords.length}`);
+
+        if (clinicaRecords.length) {
+          console.log('❤️ Data clínica record match with data document, adding data to memory');
+          emitData.push({ document, clinicaRecord: clinicaRecords[0] });
+        } else {
+          console.log('🚫 Document it does not have any record, we continue with the following query.');
+          emitData.push({ document, clinicaRecord: null });
+        }
+      }
+    }
+
+    if (emitData.length) {
+      const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+      console.log('📨 Send data process...');
+
+      const worker = new Worker('./src/workers/mettingsMigrateWorker.js', {
+        workerData: { dataProcess },
+      });
+
+      worker.once('message', (processId) => {
+        console.log(`♻️ Worker cross metting in process ${processId}`);
+      });
+    }
   }
 }
