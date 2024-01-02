@@ -14,13 +14,15 @@ export default class Server {
     const PORT = this._config.PORT;
     await this._cosmosImpl.initConnect();
     await this._mongoImpl.initConnect();
+    console.log(clc.yellow(`Clinica environment: ${process.env.CLINICA_ENVIRONMENT}`));
     return this._express.listen(PORT, () => {
       if (process.env.NODE_ENV !== 'production') {
         const route = () => `http://localhost:${PORT}`;
         console.log(`Hello, your app is ready on ${route()}`);
         console.log('To shut it down, press <CTRL> + C at any time.');
         console.log(clc.greenBright('-------------------------------------------------------'));
-        console.log(clc.greenBright(`Environment  : ${process.env.NODE_ENV}`));
+        console.log(clc.greenBright(`Environment app : ${process.env.NODE_ENV}`));
+        console.log(clc.greenBright(`Environment clinica : ${process.env.CLINICA_ENVIRONMENT}`));
         console.log(clc.greenBright(`App name     : ${this._pkg.name}`));
         console.log(clc.greenBright(`Version      : ${this._pkg.version}`));
         console.log(clc.greenBright(`Author api   : ${this._pkg.author}`));

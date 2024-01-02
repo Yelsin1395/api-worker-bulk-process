@@ -128,7 +128,10 @@ function normalizeDateTimeSeparate(datetime) {
 }
 
 function normalizeTypeInvoice(affect, unaffected) {
-  const payload = {};
+  const payload = {
+    tipo: '',
+    nroFactura: '',
+  };
 
   const codeTypes = {
     affect: 'AFECTA',
@@ -145,7 +148,7 @@ function normalizeTypeInvoice(affect, unaffected) {
     payload.nroFactura = unaffected;
   }
 
-  return Object.values(payload).length ? payload : "";
+  return payload;
 }
 
 module.exports = {

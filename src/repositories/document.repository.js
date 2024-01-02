@@ -107,4 +107,38 @@ export default class DocumentRepository {
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }
+
+  async getAllByNroLote(nroLote) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_DOCUMENT });
+
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.nroLote = @nroLote',
+      parameters: [
+        {
+          name: '@nroLote',
+          value: parseInt(nroLote),
+        },
+      ],
+    };
+
+    const result = await container.items.query(querySpec).fetchAll();
+    return result.resources;
+  }
+
+  async getAllByMetting(nroEncuentro) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_DOCUMENT });
+
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.nroEncuentro = @nroEncuentro',
+      parameters: [
+        {
+          name: '@nroEncuentro',
+          value: `${nroEncuentro}`,
+        },
+      ],
+    };
+
+    const result = await container.items.query(querySpec).fetchAll();
+    return result.resources;
+  }
 }

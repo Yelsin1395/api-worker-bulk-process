@@ -23,4 +23,23 @@ export default class StorageTableRepository {
       continuationToken: page.value?.continuationToken ?? null,
     };
   }
+
+  async getLoteByRangeDate(continuationToken) {
+    const tableName = 'storagetablelote';
+    const tableClient = this._storageTableImpl.connect(tableName);
+
+    const page = await tableClient
+      .listEntities({
+        queryOptions: {
+          filter: `Timestamp ge datetime'2023-11-01T00:00:00Z' and Timestamp le datetime'2023-11-30T23:59:59Z'`,
+        },
+      })
+      .byPage({ maxPageSize: 100, continuationToken })
+      .next();
+
+    return {
+      resources: page.value,
+      continuationToken: page.value?.continuationToken ?? null,
+    };
+  }
 }

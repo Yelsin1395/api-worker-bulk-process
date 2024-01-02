@@ -71,4 +71,53 @@ export default class InvoiceService {
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
+
+  async processMigrateByLote(nroLote) {
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+
+    const result = await this._clinicaRecordRepository.getAllByNroLote(nroLote);
+
+    let itemsTotalProcess = result.length;
+    let processCount = 1;
+    const emitData = [];
+
+    progressBar.start(itemsTotalProcess, 0);
+
+    for (const clinicaRecord of result) {
+      progressBar.increment();
+      progressBar.update(processCount++);
+
+      const documents = await this._documentRepository.getRecordByLoteAndFactura(clinicaRecord.nroLote, clinicaRecord.facturaNro);
+      console.log(`📄 Total documents obtained: ${documents.length}`);
+
+      if (documents.length) {
+        console.log('❤️ Data clínica record match with data document, adding data to memory');
+
+        emitData.push({ clinicaRecord, document: documents[0] });
+      } else {
+        console.log('🚫 Clinica it does not have any record, we continue with the following query.');
+        emitData.push({ clinicaRecord, document: null });
+      }
+    }
+
+    if (emitData.length) {
+      const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+      console.log('📨 Send data process...');
+      const worker = new Worker('./src/workers/crossInvoiceWorket.js', {
+        workerData: { dataProcess },
+      });
+
+      worker.once('message', (processId) => {
+        console.log(`♻️ Worker cross invoice in process ${processId}`);
+      });
+    }
+
+    progressBar.stop();
+  }
 }

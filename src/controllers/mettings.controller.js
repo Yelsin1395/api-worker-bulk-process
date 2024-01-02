@@ -12,4 +12,12 @@ export default class MettingsController {
       message: 'Data process migrate invoice',
     });
   }
+
+  async processMigrateByMetting(req, res) {
+    this._mettingsService.processMigrateByMetting();
+    return res.status(200).send({
+      status: 200,
+      message: 'Data process migrate by metting',
+    });
+  }
 }

@@ -41,45 +41,46 @@ async function workerProcess(data) {
           nroHistoriaClinica: setInput.string(document.peticionHisID),
           peticiones,
           paciente: {
-            apellidoPaterno: setInput.string(clinicaRecord.pacienteApellidoPaterno),
-            apellidoMaterno: setInput.string(clinicaRecord.pacienteApellidoMaterno),
-            nombre: setInput.string(clinicaRecord.pacienteNombre),
+            apellidoPaterno: setInput.string(clinicaRecord?.pacienteApellidoPaterno),
+            apellidoMaterno: setInput.string(clinicaRecord?.pacienteApellidoMaterno),
+            nombre: setInput.string(clinicaRecord?.pacienteNombre),
             documentoIdentidad: {
-              id: setInput.string(clinicaRecord.pacienteTipoDocIdentId),
-              descripcion: clinicaRecord.pacienteTipoDocIdentId === '1' ? 'D.N.I' : clinicaRecord.pacienteTipoDocIdentDesc,
-              numero: setInput.string(clinicaRecord.pacienteNroDocIdent),
+              id: setInput.string(clinicaRecord?.pacienteTipoDocIdentId),
+              descripcion: setInput.string(clinicaRecord?.pacienteTipoDocIdentId === '1' ? 'D.N.I' : clinicaRecord?.pacienteTipoDocIdentDesc),
+              numero: setInput.string(clinicaRecord?.pacienteNroDocIdent),
             },
           },
           modoFacturacion: {
-            id: setInput.string(clinicaRecord.modoFacturacionId),
-            descripcion: setInput.string(clinicaRecord.modoFacturacion),
+            id: setInput.string(clinicaRecord?.modoFacturacionId),
+            descripcion: setInput.string(clinicaRecord?.modoFacturacion),
           },
           mecanismoFacturacion: {
-            id: setInput.string(clinicaRecord.mecanismoFacturacionId),
-            descripcion: setInput.string(clinicaRecord.mecanismoFacturacionDesc),
+            id: setInput.string(clinicaRecord?.mecanismoFacturacionId),
+            descripcion: setInput.string(clinicaRecord?.mecanismoFacturacionDesc),
           },
-          nroRemesa: setInput.number(clinicaRecord.nroRemesa),
-          importeFacturacion: setInput.number(clinicaRecord.facturaImporte),
+          nroRemesa: setInput.number(clinicaRecord?.nroRemesa),
+          importeFacturacion: setInput.number(clinicaRecord?.facturaImporte),
           garante: {
-            id: setInput.string(clinicaRecord.garanteId),
-            descripcion: setInput.string(clinicaRecord.garanteDescripcion),
+            id: setInput.string(clinicaRecord?.garanteId),
+            descripcion: setInput.string(clinicaRecord?.garanteDescripcion),
           },
           beneficio: {
-            id: setInput.string(clinicaRecord.beneficioId),
-            descripcion: setInput.string(clinicaRecord.beneficioDescripcion),
+            id: setInput.string(clinicaRecord?.beneficioId),
+            descripcion: setInput.string(clinicaRecord?.beneficioDescripcion),
           },
           origenServicio: {
             id: setInput.string(document.codigoServicioOrigen),
             descripcion: setInput.string(document.origenServicio),
           },
-          fechaAtencion: helpers.normalizeDateTime(document.fechaAtencion),
-          fechaEfectivaOrden: helpers.normalizeDateTime(document.fechaEfectivaOrden),
+          origenSistema: setInput.string(document.origenDescripcion),
+          fechaAtencion: helpers.normalizeDateTime(document.fechaAtencion, 2),
+          fechaEfectivaOrden: document.fechaEfectivaOrden ? helpers.normalizeDateTime(document.fechaEfectivaOrden) : null,
           fechaMensaje: document.fechaMensaje ? helpers.normalizeDateTime(document.fechaMensaje) : null,
           archivos,
-          historialDevolucion: document.historialDevolucion ? normalizeHistoryDevolutions(document.historialDevolucion) : [],
-          usuario: document.userName ?? null,
-          fechaRegistro: helpers.normalizeDateTime(document.fechaAtencion),
-          fechaModificacion: helpers.normalizeDateTime(document.fechaAtencion),
+          historialDevoluciones: document.historialDevolucion ? normalizeHistoryDevolutions(document.historialDevolucion) : [],
+          usuario: setInput.string(document.userName ?? null),
+          fechaRegistro: helpers.normalizeDateTime(document.fechaAtencion, 2),
+          fechaModificacion: helpers.normalizeDateTime(document.fechaAtencion, 2),
         };
 
         const uploadOptions = {
@@ -134,7 +135,7 @@ function normalizeFiles(files) {
       idPeticionHis: setInput.string(file.peticionid),
       usuario: setInput.string(file.userName),
       origen: setInput.string(file.origen),
-      fechaCarga: file?.fechaCarga ? helpers.normalizeDateTime(file.fechaCarga) : null,
+      fechaCarga: file?.fechaCarga ? helpers.normalizeDateTime(file.fechaCarga, 2) : null,
     };
   });
 
