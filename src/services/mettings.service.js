@@ -3,10 +3,11 @@ import cliProgress from 'cli-progress';
 const clc = require('cli-color');
 
 export default class MettingsService {
-  constructor({ loggerRepository, clinicaRecordRepository, documentRepository }) {
+  constructor({ loggerRepository, clinicaRecordRepository, documentRepository, mettingRepository }) {
     this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._documentRepository = documentRepository;
+    this._mettingRepository = mettingRepository;
   }
 
   discardPendingFile(files) {
@@ -173,6 +174,35 @@ export default class MettingsService {
 
       worker.once('message', (processId) => {
         console.log(`♻️ Worker cross metting in process ${processId}`);
+      });
+    }
+  }
+
+  async processFilesByMetting() {
+    const nroEncuentros = [];
+    const emitData = [];
+
+    for (const nroEncuentro of nroEncuentros) {
+      const mettings = await this._mettingRepository.getAllByNroEncuentro(nroEncuentro);
+
+      for (const metting of mettings) {
+        if (metting.nroLote !== '0' && metting.nroFactura !== '0') {
+          emitData.push(metting);
+        }
+      }
+    }
+
+    if (emitData.length) {
+      const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+      console.log('📨 Send data process...');
+
+      const worker = new Worker('./src/workers/mettingsValidateFiles.js', {
+        workerData: { dataProcess },
+      });
+
+      worker.once('message', (processId) => {
+        console.log(`♻️ Worker copy valoidate files metting process ${processId}`);
       });
     }
   }

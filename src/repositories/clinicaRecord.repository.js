@@ -77,4 +77,21 @@ export default class ClinicaRecordRepository {
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }
+
+  async getInvoiceByNroFactura(facturaNro) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_CLINICARECORD });
+
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.facturaNro = @facturaNro',
+      parameters: [
+        {
+          name: '@facturaNro',
+          value: facturaNro,
+        },
+      ],
+    };
+
+    const result = await container.items.query(querySpec).fetchAll();
+    return result.resources;
+  }
 }

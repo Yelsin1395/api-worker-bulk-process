@@ -36,7 +36,7 @@ export default class LoteService {
   }
 
   async processCopyFilesByLote() {
-    const lotes = ['77598'];
+    const lotes = ['526396'];
     let emitData = [];
 
     for (const lote of lotes) {

@@ -41,4 +41,21 @@ export default class MettingRepository {
     const result = await container.items.query(querySpec).fetchAll();
     return result.resources;
   }
+
+  async getAllByNroEncuentro(nroEncuentro) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_MEETING });
+
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.nroEncuentro = @nroEncuentro',
+      parameters: [
+        {
+          name: '@nroEncuentro',
+          value: nroEncuentro,
+        },
+      ],
+    };
+
+    const result = await container.items.query(querySpec).fetchAll();
+    return result.resources;
+  }
 }

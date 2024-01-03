@@ -63,8 +63,6 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
   const filesTransform = [];
 
   for (const file of files) {
-    if (!file.urlArchivoSas) continue;
-
     const separateBlobName = file.urlArchivoSas.split('/');
     const fileNameAbs = separateBlobName.pop();
     const typeFileExtension = fileNameAbs.split('_').pop();
@@ -108,6 +106,20 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
   return filesTransform;
 }
 
+function combineFiles(mettingFiles, documentFiles) {
+  for (const file2 of documentFiles) {
+    const index = mettingFiles.findIndex((file1) => file1.nombre === file2.tipoDocumentoId);
+
+    if (index !== -1) {
+      mettingFiles[index] = file2;
+    } else {
+      mettingFiles.push(file2);
+    }
+
+    return mettingFiles;
+  }
+}
+
 async function workerProcess(data) {
   console.log(clc.yellowBright(`⌛ Processing data`));
 
@@ -133,11 +145,7 @@ async function workerProcess(data) {
           if (document.archivos.length) {
             const files = await normalizeFiles(encuentro.nroEncuentro, encuentro.nroLote, encuentro.nroFactura, document.archivos);
 
-            if (files.length) {
-              for (const file of files) {
-                encuentro.archivos.push(file);
-              }
-            }
+            encuentro.archivos = combineFiles(encuentro.archivos, files);
 
             await containerMetting.items.upsert(encuentro);
             console.log(clc.greenBright(`💾 The data is stored correctly`));
