@@ -5,6 +5,7 @@ export default function ({ mettingsController }) {
 
   router.post('/process-migrate', mettingsController.processMigrateMettings);
   router.post('/process-migrate-metting', mettingsController.processMigrateByMetting);
+  router.post('/process-files', mettingsController.processFilesByMetting);
 
   return router;
 }

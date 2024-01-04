@@ -61,45 +61,66 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
   console.log('⌛⌛⌛ Normalize file ⌛⌛⌛');
   const containerClient = cloudStorageBlob.initConnect();
   const filesTransform = [];
+  const uploadOptions = {
+    tags: {
+      ENCUENTRO: nroEncuentro,
+      FACTURADOC: nroFactura,
+      LOTEDOC: nroLote,
+    },
+  };
 
   for (const file of files) {
-    const separateBlobName = file.urlArchivoSas.split('/');
-    const fileNameAbs = separateBlobName.pop();
-    const typeFileExtension = fileNameAbs.split('_').pop();
-    const blobNameUpload = `documentos/${nroLote}/${nroFactura}/${nroEncuentro}/${nroFactura}_${nroEncuentro}_${typeFileExtension}`;
+    if (Object.keys(file).includes('nombre')) {
+      if (!file.urlSas) continue;
 
-    console.log('⬇️⬇️⬇️⌛ Download file ... ⬇️⬇️⬇️⌛');
-    const fileBuffer = await downloadBufferFile(containerClient, file.urlArchivoSas);
+      const separateBlobName = file.urlSas.split('/');
+      const fileNameAbs = separateBlobName.pop();
+      const typeFileExtension = fileNameAbs.split('_').pop();
+      const blobNameUpload = `documentos/${nroLote}/${nroFactura}/${nroEncuentro}/${nroFactura}_${nroEncuentro}_${typeFileExtension}`;
 
-    const uploadOptions = {
-      tags: {
-        ENCUENTRO: nroEncuentro,
-        FACTURADOC: nroFactura,
-        LOTEDOC: nroLote,
-      },
-    };
+      console.log('⬇️⬇️⬇️⌛ Download file ... ⬇️⬇️⬇️⌛');
+      const fileBuffer = await downloadBufferFile(containerClient, file.urlSas);
 
-    console.log('⬆️⬆️⬆️⌛ Upload file ... ⬆️⬆️⬆️⌛');
-    const { urlBlob, urlSasBlob } = await uploadBufferFile(containerClient, blobNameUpload, uploadOptions, fileBuffer);
+      console.log('⬆️⬆️⬆️⌛ Upload file ... ⬆️⬆️⬆️⌛');
+      const { urlBlob, urlSasBlob } = await uploadBufferFile(containerClient, blobNameUpload, uploadOptions, fileBuffer);
 
-    console.log('📥📥📥 Adding a transform file ... 📥📥📥');
-    filesTransform.push({
-      nombre: setInput.string(file.nombreArchivo),
-      url: urlBlob,
-      urlSas: urlSasBlob,
-      documentoRequerido: {
-        id: setInput.string(file.tipoDocumentoId),
-        descripcion: setInput.string(file.tipoDocumentoDesc),
-      },
-      estado: setInput.string(file.estadoArchivo),
-      mensajeError: setInput.string(file.msjError),
-      existe: setInput.boolean(file.existe),
-      error: setInput.string(file.error),
-      idPeticionHis: setInput.string(file.peticionid),
-      usuario: setInput.string(file.userName),
-      origen: setInput.string(file.origen),
-      fechaCarga: file?.fechaCarga ? helpers.normalizeDateTime(file.fechaCarga, 2) : null,
-    });
+      console.log('📥📥📥 Adding a transform file ... 📥📥📥');
+      file.url = urlBlob;
+      file.urlSas = urlSasBlob;
+      filesTransform.push(file);
+    } else {
+      if (!file.urlArchivoSas) continue;
+
+      const separateBlobName = file.urlArchivoSas.split('/');
+      const fileNameAbs = separateBlobName.pop();
+      const typeFileExtension = fileNameAbs.split('_').pop();
+      const blobNameUpload = `documentos/${nroLote}/${nroFactura}/${nroEncuentro}/${nroFactura}_${nroEncuentro}_${typeFileExtension}`;
+
+      console.log('⬇️⬇️⬇️⌛ Download file ... ⬇️⬇️⬇️⌛');
+      const fileBuffer = await downloadBufferFile(containerClient, file.urlArchivoSas);
+
+      console.log('⬆️⬆️⬆️⌛ Upload file ... ⬆️⬆️⬆️⌛');
+      const { urlBlob, urlSasBlob } = await uploadBufferFile(containerClient, blobNameUpload, uploadOptions, fileBuffer);
+
+      console.log('📥📥📥 Adding a transform file ... 📥📥📥');
+      filesTransform.push({
+        nombre: setInput.string(file.nombreArchivo),
+        url: urlBlob,
+        urlSas: urlSasBlob,
+        documentoRequerido: {
+          id: setInput.string(file.tipoDocumentoId),
+          descripcion: setInput.string(file.tipoDocumentoDesc),
+        },
+        estado: setInput.string(file.estadoArchivo),
+        mensajeError: setInput.string(file.msjError),
+        existe: setInput.boolean(file.existe),
+        error: setInput.string(file.error),
+        idPeticionHis: setInput.string(file.peticionid),
+        usuario: setInput.string(file.userName),
+        origen: setInput.string(file.origen),
+        fechaCarga: file?.fechaCarga ? helpers.normalizeDateTime(file.fechaCarga, 2) : null,
+      });
+    }
   }
 
   console.log('🈯🈯🈯 Process normalize file finished 🈯🈯🈯');
@@ -115,9 +136,9 @@ function combineFiles(mettingFiles, documentFiles) {
     } else {
       mettingFiles.push(file2);
     }
-
-    return mettingFiles;
   }
+
+  return mettingFiles;
 }
 
 async function workerProcess(data) {
@@ -133,7 +154,14 @@ async function workerProcess(data) {
 
     if (value) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
+
       for (const encuentro of value) {
+        console.log('〰️〰️〰️ Process normalize files of metting ... 〰️〰️〰️');
+        const files = await normalizeFiles(encuentro.nroEncuentro, encuentro.nroLote, encuentro.nroFactura, encuentro.archivos);
+
+        console.log('🔃🔃🔃 Process conbine files ...  🔃🔃🔃');
+        encuentro.archivos = combineFiles(encuentro.archivos, files);
+
         const querySpec = `SELECT * FROM c WHERE c.nroEncuentro = '${encuentro.nroEncuentro}'`;
 
         const result = await containerDocument.items.query(querySpec).fetchAll();
@@ -143,12 +171,24 @@ async function workerProcess(data) {
           const document = documents[0];
 
           if (document.archivos.length) {
-            const files = await normalizeFiles(encuentro.nroEncuentro, encuentro.nroLote, encuentro.nroFactura, document.archivos);
+            const filesNew = await normalizeFiles(encuentro.nroEncuentro, encuentro.nroLote, encuentro.nroFactura, document.archivos);
 
-            encuentro.archivos = combineFiles(encuentro.archivos, files);
+            console.log('🔃🔃🔃 Process conbine files ...  🔃🔃🔃');
+            encuentro.archivos = combineFiles(encuentro.archivos, filesNew);
 
             await containerMetting.items.upsert(encuentro);
             console.log(clc.greenBright(`💾 The data is stored correctly`));
+
+            console.log('Process delete whit nroLote 0 and nroFactura 0 ...');
+            const querySpec2 = `SELECT * FROM c WHERE c.nroEncuentro = '${encuentro.nroEncuentro}' AND c.nroLote = '0' AND c.nroFactura = '0'`;
+            const resultMettings = await containerMetting.items.query(querySpec2).fetchAll();
+
+            if (resultMettings.resources.length) {
+              for (const entity of resultMettings.resources) {
+                await containerMetting.item(entity.nroEncuentro, ['0', '0']).delete();
+                console.log(clc.redBright('🗑️ The data is delete correctly'));
+              }
+            }
           }
         }
       }

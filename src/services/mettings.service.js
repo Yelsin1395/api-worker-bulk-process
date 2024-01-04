@@ -179,7 +179,7 @@ export default class MettingsService {
   }
 
   async processFilesByMetting() {
-    const nroEncuentros = [];
+    const nroEncuentros = ['23234981'];
     const emitData = [];
 
     for (const nroEncuentro of nroEncuentros) {
