@@ -10,22 +10,6 @@ export default class MettingsService {
     this._mettingRepository = mettingRepository;
   }
 
-  discardPendingFile(files) {
-    const validFiles = [];
-
-    for (const file of files) {
-      if (file.estadoArchivo !== 'PENDIENTE') {
-        if (file.archivoBytes?.length) {
-          file.archivoBytes = '';
-        }
-
-        validFiles.push(file);
-      }
-    }
-
-    return validFiles;
-  }
-
   async processMigrateMettings() {
     let continuationToken = null;
 
@@ -179,31 +163,57 @@ export default class MettingsService {
   }
 
   async processFilesByMetting() {
-    const nroEncuentros = ['23273590'];
-    const emitData = [];
+    let continuationToken = null;
 
-    for (const nroEncuentro of nroEncuentros) {
-      const mettings = await this._mettingRepository.getAllByNroEncuentro(nroEncuentro);
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
 
-      for (const metting of mettings) {
-        if (metting.nroLote !== '0' && metting.nroFactura !== '0') {
-          emitData.push(metting);
+    do {
+      const result = await this._mettingRepository.getAllMettingTraverse(continuationToken);
+      let itemsTotalProcess = result.resources.length;
+      let processCount = 1;
+      const emitData = [];
+      progressBar.start(itemsTotalProcess, 0);
+      continuationToken = result.continuationToken;
+
+      console.log(`🔓 Last process token: ${continuationToken}`);
+
+      if (continuationToken) {
+        this._loggerRepository.create('MEETING_SERVICE', continuationToken);
+      }
+      for (const nroEncuentro of result.resources) {
+        progressBar.increment();
+        progressBar.update(processCount++);
+
+        const mettings = await this._mettingRepository.getAllByNroEncuentro(nroEncuentro.nroEncuentro);
+
+        for (const metting of mettings) {
+          if (metting.nroLote !== '0' && metting.nroFactura !== '0' && metting.archivos !== null) {
+            emitData.push(metting);
+          }
         }
       }
-    }
+      console.log('tamaño de obtener los datos despues del filtro', emitData.length);
+      if (emitData.length) {
+        const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
 
-    if (emitData.length) {
-      const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+        console.log('📨 Send data process...');
 
-      console.log('📨 Send data process...');
+        const worker = new Worker('./src/workers/mettingsValidateFiles.js', {
+          workerData: { dataProcess },
+        });
 
-      const worker = new Worker('./src/workers/mettingsValidateFiles.js', {
-        workerData: { dataProcess },
-      });
+        worker.once('message', (processId) => {
+          console.log(`♻️ Worker copy valoidate files metting process ${processId}`);
+        });
+      }
+      progressBar.stop();
+    } while (continuationToken);
 
-      worker.once('message', (processId) => {
-        console.log(`♻️ Worker copy valoidate files metting process ${processId}`);
-      });
-    }
+    console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
 }

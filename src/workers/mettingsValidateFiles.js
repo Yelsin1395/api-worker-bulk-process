@@ -129,7 +129,21 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
 
 function combineFiles(mettingFiles, documentFiles) {
   for (const file2 of documentFiles) {
-    const index = mettingFiles.findIndex((file1) => file1.nombre === file2.tipoDocumentoId);
+    const index = mettingFiles.findIndex((file1) => file1.documentoRequerido.id === file2.tipoDocumentoId);
+
+    if (index !== -1) {
+      mettingFiles[index] = file2;
+    } else {
+      mettingFiles.push(file2);
+    }
+  }
+
+  return mettingFiles;
+}
+
+function combineFilesv2(mettingFiles, documentFiles) {
+  for (const file2 of documentFiles) {
+    const index = mettingFiles.findIndex((file1) => file1.documentoRequerido.id === file2.documentoRequerido.id);
 
     if (index !== -1) {
       mettingFiles[index] = file2;
@@ -158,9 +172,9 @@ async function workerProcess(data) {
       for (const encuentro of value) {
         console.log('〰️〰️〰️ Process normalize files of metting ... 〰️〰️〰️');
         const files = await normalizeFiles(encuentro.nroEncuentro, encuentro.nroLote, encuentro.nroFactura, encuentro.archivos);
-
+        
         console.log('🔃🔃🔃 Process conbine files ...  🔃🔃🔃');
-        encuentro.archivos = combineFiles(encuentro.archivos, files);
+        encuentro.archivos = combineFilesv2(encuentro.archivos, files);
 
         const querySpec = `SELECT * FROM c WHERE c.nroEncuentro = '${encuentro.nroEncuentro}'`;
 
@@ -179,14 +193,15 @@ async function workerProcess(data) {
             await containerMetting.items.upsert(encuentro);
             console.log(clc.greenBright(`💾 The data is stored correctly`));
 
-            console.log('Process delete whit nroLote 0 and nroFactura 0 ...');
-            const querySpec2 = `SELECT * FROM c WHERE c.nroEncuentro = '${encuentro.nroEncuentro}' AND c.nroLote = '0' AND c.nroFactura = '0'`;
+            const querySpec2 = `SELECT * FROM c WHERE c.nroEncuentro = '${encuentro.nroEncuentro}'`;
             const resultMettings = await containerMetting.items.query(querySpec2).fetchAll();
 
             if (resultMettings.resources.length) {
               for (const entity of resultMettings.resources) {
-                await containerMetting.item(entity.nroEncuentro, ['0', '0']).delete();
-                console.log(clc.redBright('🗑️ The data is delete correctly'));
+                if ((entity.nroLote == '0' && entity.nroFactura == '0') || entity.archivos == null) {
+                  await containerMetting.item(entity.nroEncuentro, [entity.nroLote, entity.nroFactura]).delete();
+                  console.log(clc.redBright('🗑️ The data is delete correctly'));
+                }
               }
             }
           }

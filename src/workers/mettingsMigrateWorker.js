@@ -72,7 +72,10 @@ async function workerProcess(data) {
   console.log(clc.yellowBright(`⌛ Processing data`));
 
   const { cosmosImpl } = await initConnect();
-  const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_MEETING });
+  const { container } = await cosmosImpl.containers.createIfNotExists({
+    id: process.env.COSMOS_TABLE_MEETING,
+    partitionKey: { paths: ['/nroLote', '/nroFactura'], version: 2, kind: 'MultiHash' },
+  });
   const wd = processRunner(data, process.env.MAX_ITEM_PROCESS_WORKER);
   let processEnd = false;
 

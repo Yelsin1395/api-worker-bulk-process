@@ -15,7 +15,7 @@ async function workerProcess(data) {
   console.log(clc.yellowBright(`⌛ Processing data`));
 
   const { cosmosImpl } = await initConnect();
-  const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_INVOICE });
+  const { container } = await cosmosImpl.containers.createIfNotExists({ id: process.env.COSMOS_TABLE_INVOICE, partitionKey: { paths: ['/nroLote'] } });
   const wd = processRunner(data, process.env.MAX_ITEM_PROCESS_WORKER);
   let processEnd = false;
 
@@ -24,7 +24,7 @@ async function workerProcess(data) {
 
     if (value) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       for (let item of value) {
         const { clinicaRecord, document } = item;
 
