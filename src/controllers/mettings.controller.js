@@ -6,6 +6,7 @@ export default class MettingsController {
     this.processMigrateByMetting = this.processMigrateByMetting.bind(this);
     this.processFilesByMetting = this.processFilesByMetting.bind(this);
     this.searchBlobsByNroEncuentroProcess = this.searchBlobsByNroEncuentroProcess.bind(this);
+    this.exportDoubleMechanism = this.exportDoubleMechanism.bind(this);
   }
 
   async processMigrateMettings(req, res) {
@@ -37,6 +38,14 @@ export default class MettingsController {
     return res.status(200).send({
       status: 200,
       message: 'Data process search files in blob by metting',
+    });
+  }
+
+  async exportDoubleMechanism(req, res) {
+    this._mettingsService.exportDoubleMechanism();
+    return res.status(200).send({
+      status: 200,
+      message: 'Data process double mechanism export by metting',
     });
   }
 }

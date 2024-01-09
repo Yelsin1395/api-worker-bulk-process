@@ -2,6 +2,7 @@ import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
 const helpers = require('../common/helpers');
+import fs from 'fs';
 
 export default class MettingsService {
   constructor({ loggerRepository, clinicaRecordRepository, documentRepository, mettingRepository, storageBlobRepository, storageTableRepository }) {
@@ -308,5 +309,65 @@ export default class MettingsService {
       await this._mettingRepository.update(metting);
       console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished metting ${nroEncuentro} 🏁🏁🏁`));
     }
+  }
+
+  async exportDoubleMechanism() {
+    let continuationToken = null;
+    let mettingPrevious = null;
+
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+
+    do {
+      const result = await this._mettingRepository.allMettingsByDate(continuationToken);
+      let itemsTotalProcess = result.resources.length;
+      let processCount = 1;
+
+      progressBar.start(itemsTotalProcess, 0);
+      continuationToken = result.continuationToken;
+
+      console.log(`🔓 Last process token: ${continuationToken}`);
+
+      if (continuationToken) {
+        this._loggerRepository.create('MEETING_SERVICE_EXPORT_DOUBLE_MECHANISM', continuationToken);
+      }
+
+      for (const item of result.resources) {
+        progressBar.increment();
+        progressBar.update(processCount++);
+
+        const mettings = await this._mettingRepository.getAllByNroEncuentro(item.nroEncuentro);
+
+        console.log(`📄 Total metting obtained: ${mettings.length}`);
+
+        for (const metting of mettings) {
+          if (metting.nroLote === '0' && metting.nroFactura === '0') {
+            continue;
+          }
+
+          if (!mettingPrevious) {
+            mettingPrevious = metting;
+            continue;
+          }
+
+          if (metting.mecanismoFacturacion.id !== mettingPrevious.mecanismoFacturacion.id) {
+            console.log(`Encuentro ${metting.nroEncuentro} es doble mecanismo`);
+            fs.appendFileSync('mettingDoubleMechanism.txt', `"${metting.nroEncuentro}", `);
+            mettingPrevious = null;
+            continue;
+          }
+
+          mettingPrevious = metting;
+        }
+      }
+
+      progressBar.stop();
+    } while (continuationToken);
+
+    console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
 }
