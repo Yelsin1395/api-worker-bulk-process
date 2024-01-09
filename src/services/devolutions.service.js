@@ -3,8 +3,8 @@ import cliProgress from 'cli-progress';
 const clc = require('cli-color');
 
 export default class DevolutionsService {
-  constructor({ storageBlobDevolutionsRepository, clinicaRecordRepository }) {
-    this._storageBlobDevolutionsRepository = storageBlobDevolutionsRepository;
+  constructor({ storageBlobRepository, clinicaRecordRepository }) {
+    this._storageBlobRepository = storageBlobRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._folderName = 'devoluciones';
   }
@@ -23,7 +23,7 @@ export default class DevolutionsService {
     });
 
     do {
-      const blobs = await this._storageBlobDevolutionsRepository.traverse(continuationToken);
+      const blobs = await this._storageBlobRepository.traverse(continuationToken);
       const wd = await blobs.next();
       const items = wd.value.segment.blobItems;
       const emitData = [];
@@ -46,7 +46,7 @@ export default class DevolutionsService {
           const encuentro = fileName.split('_')[0];
 
           if (encuentro !== '0') {
-            const fileString = await this._storageBlobDevolutionsRepository.downloadStringFile(blobName);
+            const fileString = await this._storageBlobRepository.downloadStringFile(blobName);
             const devolution = JSON.parse(fileString);
             const clinicaRecord = await this._clinicaRecordRepository.getRecordByLoteAndFactura(devolution.nroLote, devolution.facturaNro);
 

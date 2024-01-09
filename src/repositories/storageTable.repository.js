@@ -42,4 +42,23 @@ export default class StorageTableRepository {
       continuationToken: page.value?.continuationToken ?? null,
     };
   }
+
+  async getTypeDocByCodigo(codigo) {
+    const tableName = 'storagetablecatalogo';
+    const tableClient = this._storageTableImpl.connect(tableName);
+    let result = null;
+
+    const iterator = await tableClient.listEntities({
+      queryOptions: {
+        filter: `Codigo eq '${codigo}'`,
+      },
+    });
+
+    for await (const page of iterator) {
+      result = page;
+      break;
+    }
+
+    return result;
+  }
 }

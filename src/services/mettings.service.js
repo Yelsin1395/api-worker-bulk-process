@@ -1,13 +1,16 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
+const helpers = require('../common/helpers');
 
 export default class MettingsService {
-  constructor({ loggerRepository, clinicaRecordRepository, documentRepository, mettingRepository }) {
+  constructor({ loggerRepository, clinicaRecordRepository, documentRepository, mettingRepository, storageBlobRepository, storageTableRepository }) {
     this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._documentRepository = documentRepository;
     this._mettingRepository = mettingRepository;
+    this._storageBlobRepository = storageBlobRepository;
+    this._storageTableRepository = storageTableRepository;
   }
 
   async processMigrateMettings() {
@@ -215,5 +218,95 @@ export default class MettingsService {
     } while (continuationToken);
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
+  }
+
+  // async processFilesByMetting() {
+  //   const nroEncuentros = ['23236230'];
+  //   const emitData = [];
+
+  //   for (const nroEncuentro of nroEncuentros) {
+  //     const mettings = await this._mettingRepository.getAllByNroEncuentro(nroEncuentro);
+
+  //     for (const metting of mettings) {
+  //       if (metting.nroLote !== '0' && metting.nroFactura !== '0') {
+  //         emitData.push(metting);
+  //       }
+  //     }
+  //   }
+
+  //   if (emitData.length) {
+  //     const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+  //     console.log('📨 Send data process...');
+
+  //     const worker = new Worker('./src/workers/mettingsValidateFiles.js', {
+  //       workerData: { dataProcess },
+  //     });
+
+  //     worker.once('message', (processId) => {
+  //       console.log(`♻️ Worker copy valoidate files metting process ${processId}`);
+  //     });
+  //   }
+  // }
+
+  _getFileExtension(filename) {
+    return /[.]/.exec(filename) ? /[^.]+$/.exec(filename)[0] : undefined;
+  }
+
+  async searchBlobsByNroEncuentroProcess() {
+    const nroEncuentros = ['23282544'];
+
+    for (const nroEncuentro of nroEncuentros) {
+      const mettings = await this._mettingRepository.getAllByNroEncuentro(nroEncuentro);
+
+      if (!mettings.length) {
+        continue;
+      }
+
+      const metting = mettings[0];
+      const tags = {
+        ENCUENTRO: metting.nroEncuentro,
+        FACTURADOC: metting.nroFactura,
+        LOTEDOC: metting.nroLote,
+      };
+
+      const blobs = await this._storageBlobRepository.searchFileByTags(tags);
+      let wd = await blobs.next();
+
+      while (!wd.done) {
+        const blob = wd.value;
+        const urlBlob = await this._storageBlobRepository.getUrlsBlob(blob.name);
+        const separateBlobName = blob.name.split('/');
+        const typeDocument = separateBlobName.pop().split('_').pop().split('.')[0];
+        const fileExtension = this._getFileExtension(blob.name);
+
+        if (!metting.archivos.some((f) => f.documentoRequerido.id === typeDocument)) {
+          const catalog = await this._storageTableRepository.getTypeDocByCodigo(typeDocument);
+
+          metting.archivos.push({
+            nombre: `${typeDocument}.${fileExtension}`,
+            url: urlBlob,
+            urlSas: blob.name,
+            documentoRequerido: {
+              id: catalog.Codigo,
+              descripcion: catalog.Descripcion,
+            },
+            estado: 'OK',
+            mensajeError: '',
+            existe: true,
+            error: false,
+            idPeticionHis: null,
+            usuario: null,
+            origen: 'EXPEDIENTE_DIGITAL',
+            fechaCarga: helpers.normalizeCurrentDateTimeUtc(),
+          });
+        }
+
+        wd = await blobs.next();
+      }
+
+      await this._mettingRepository.update(metting);
+      console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished metting ${nroEncuentro} 🏁🏁🏁`));
+    }
   }
 }

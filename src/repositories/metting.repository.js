@@ -76,4 +76,10 @@ export default class MettingRepository {
       continuationToken: data.continuationToken,
     };
   }
+
+  async update(metting) {
+    const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_MEETING });
+
+    await container.items.upsert(metting);
+  }
 }

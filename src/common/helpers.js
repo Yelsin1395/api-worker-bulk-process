@@ -145,7 +145,23 @@ function normalizeTypeInvoice(affect, unaffected) {
     payload.nroFactura = unaffected;
   }
 
-  return Object.values(payload).length ? payload : "";
+  return Object.values(payload).length ? payload : '';
+}
+
+function buildObjectToQueryString(object) {
+  const conditions = [];
+
+  for (const key in object) {
+    conditions.push(`${key} = '${object[key]}'`);
+  }
+
+  if (conditions.length > 1) {
+    return conditions.join(' AND ');
+  } else if (conditions.length === 1) {
+    return conditions.join('');
+  } else {
+    return null;
+  }
 }
 
 module.exports = {
@@ -156,4 +172,5 @@ module.exports = {
   normalizeDateTime,
   normalizeDateTimeSeparate,
   normalizeTypeInvoice,
+  buildObjectToQueryString,
 };
