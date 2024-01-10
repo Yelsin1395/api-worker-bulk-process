@@ -397,6 +397,7 @@ export default class MettingsService {
         for (let item of value) {
           progressBar.increment();
           progressBar.update(processCount++);
+          console.log(`Metting to process ${item.number}`);
           emitData.push(await this._mettingRepository.getAllByNroEncuentro(item.number));
         }
       }

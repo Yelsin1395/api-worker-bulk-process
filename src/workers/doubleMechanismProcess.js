@@ -90,6 +90,8 @@ async function workerProcess(data) {
     const { done, value } = wd.next();
 
     if (value) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
       for (let items of value) {
         let filesCombine = [];
 
