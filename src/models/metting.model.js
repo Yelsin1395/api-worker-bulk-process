@@ -5,7 +5,6 @@ const MettingSchema = new Schema(
     number: {
       type: String,
       required: true,
-      unique: true,
     },
   },
   { timestamps: true }
