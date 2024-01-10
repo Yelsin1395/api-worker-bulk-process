@@ -13,10 +13,15 @@ parentPort.postMessage(processId);
 const result = JSON.parse(Buffer.from(workerData.dataProcess).toString());
 
 async function downloadBufferFile(containerClient, blobName) {
-  const blobClient = containerClient.getBlobClient(blobName);
-  const downloadBlockBlobResponse = await blobClient.download();
-  const downloaded = await streamToBuffer(downloadBlockBlobResponse.readableStreamBody);
-  return downloaded;
+  try {
+    const blobClient = containerClient.getBlobClient(blobName);
+    const downloadBlockBlobResponse = await blobClient.download();
+    const downloaded = await streamToBuffer(downloadBlockBlobResponse.readableStreamBody);
+    return downloaded;
+  } catch (err) {
+    console.error(clc.redBright(`❌❌❌ The file no existe in blob ${blobName} ❌❌❌`));
+    return null;
+  }
 }
 
 async function streamToBuffer(readableStream) {
@@ -66,6 +71,22 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
     console.log('⬇️⬇️⬇️⌛ Download file ... ⬇️⬇️⬇️⌛');
     const fileBuffer = await downloadBufferFile(containerClient, file.urlSas);
 
+    if (!fileBuffer) {
+      file.estado = 'ERROR';
+      file.mensajeError = `El documento no existe en el blob. urlsas: ${file.urlSas}`;
+      file.url = '';
+      file.urlSas = '';
+      file.existe = false;
+      file.error = 'true';
+      file.idPeticionHis = '';
+      file.usuario = '';
+      file.origen = '';
+      file.fechaCarga = null;
+
+      filesTransform.push(file);
+      continue;
+    }
+
     console.log('⬆️⬆️⬆️⌛ Upload file ... ⬆️⬆️⬆️⌛');
     const { urlBlob, urlSasBlob } = await uploadBufferFile(containerClient, blobNameUpload, uploadOptions, fileBuffer);
 
@@ -91,7 +112,7 @@ async function workerProcess(data) {
 
     if (value) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
+
       for (let items of value) {
         let filesCombine = [];
 
