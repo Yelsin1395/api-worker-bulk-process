@@ -1,6 +1,7 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 import runner from '../common/runner';
+import fs from 'fs';
 const clc = require('cli-color');
 const helpers = require('../common/helpers');
 
@@ -373,6 +374,32 @@ export default class MettingsService {
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
 
+  // async exportDoubleMechanism() {
+  //   const result = await this._mettingRepository.getAllMongo();
+  //   const progressBar = new cliProgress.SingleBar({
+  //     format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+  //     barCompleteChar: '\u2588',
+  //     barIncompleteChar: '\u2591',
+  //     hideCursor: true,
+  //   });
+
+  //   let itemsTotalProcess = result.length;
+  //   let processCount = 1;
+
+  //   progressBar.start(itemsTotalProcess, 0);
+
+  //   for (const item of result) {
+  //     await new Promise((resolve) => setTimeout(resolve, 200));
+  //     progressBar.increment();
+  //     progressBar.update(processCount++);
+
+  //     fs.appendFileSync('mettingDoubleMechanismo.txt', `"${item.number}", `);
+  //   }
+
+  //   progressBar.stop();
+  //   console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
+  // }
+
   async doubleMechanismProcess() {
     const result = await this._mettingRepository.getAllMongo();
     console.log(`Registros obtneidos en mongo ${result.length}`);
@@ -395,6 +422,7 @@ export default class MettingsService {
 
       if (value) {
         for (let item of value) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
           progressBar.increment();
           progressBar.update(processCount++);
           console.log(`Metting to process ${item.number}`);
@@ -416,8 +444,8 @@ export default class MettingsService {
         });
       }
 
-      processEnd = done;
       progressBar.stop();
+      processEnd = done;
     } while (!processEnd);
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));

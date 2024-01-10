@@ -60,6 +60,7 @@ async function normalizeFiles(nroEncuentro, nroLote, nroFactura, files) {
   };
 
   for (const file of files) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
     if (!file.urlSas) continue;
 
     const separateBlobName = file.urlSas.split('/');
