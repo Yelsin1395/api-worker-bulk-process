@@ -415,12 +415,13 @@ export default class MettingsService {
     do {
       const { done, value } = wd.next();
       const emitData = [];
-      let itemsTotalProcess = value.length;
-      let processCount = 1;
-
-      progressBar.start(itemsTotalProcess, 0);
 
       if (value) {
+        let itemsTotalProcess = value.length;
+        let processCount = 1;
+
+        progressBar.start(itemsTotalProcess, 0);
+
         for (let item of value) {
           await new Promise((resolve) => setTimeout(resolve, 200));
           progressBar.increment();
