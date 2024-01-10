@@ -10,6 +10,7 @@ import StorageTableImpl from './cloudConnectionAzureStorage.table';
 import StorageBlobImpl from './cloudConnectionAzureStorage.blob';
 import StorageSftpImpl from './cloudConnection.sftp';
 import Logger from '../models/logger.model';
+import Metting from '../models/metting.model';
 import routes from '../routes/index';
 
 const container = createContainer();
@@ -28,6 +29,7 @@ container
   .register({
     //injections models
     Logger: asValue(Logger),
+    Metting: asValue(Metting),
   });
 
 container.loadModules(['repositories/**/*.repository.js', 'services/**/*.service.js', 'controllers/**/*.controller.js', 'routes/**/*.routes.js'], {

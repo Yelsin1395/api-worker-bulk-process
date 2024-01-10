@@ -1,7 +1,8 @@
 export default class MettingRepository {
-  constructor({ config, cosmosImpl }) {
+  constructor({ config, cosmosImpl, Metting }) {
     this._config = config;
     this._cosmosImpl = cosmosImpl;
+    this._metting = Metting;
   }
 
   async getByFacturaLote(nroFactura, nroLote) {
@@ -98,5 +99,13 @@ export default class MettingRepository {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_MEETING });
 
     await container.items.upsert(metting);
+  }
+
+  async createMongo(mettingNumber) {
+    const dbEntity = {
+      number: mettingNumber,
+    };
+
+    await this._metting.create(dbEntity);
   }
 }

@@ -2,7 +2,6 @@ import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
 const clc = require('cli-color');
 const helpers = require('../common/helpers');
-import fs from 'fs';
 
 export default class MettingsService {
   constructor({ loggerRepository, clinicaRecordRepository, documentRepository, mettingRepository, storageBlobRepository, storageTableRepository }) {
@@ -354,11 +353,13 @@ export default class MettingsService {
             continue;
           }
 
-          if (metting.mecanismoFacturacion.id !== mettingPrevious.mecanismoFacturacion.id) {
-            console.log(`Encuentro ${metting.nroEncuentro} es doble mecanismo`);
-            fs.appendFileSync('mettingDoubleMechanism.txt', `"${metting.nroEncuentro}", `);
-            mettingPrevious = null;
-            continue;
+          if (metting.nroEncuentro === mettingPrevious.nroEncuentro) {
+            if (metting.mecanismoFacturacion.id !== mettingPrevious.mecanismoFacturacion.id) {
+              console.log(`Encuentro ${metting.nroEncuentro} es doble mecanismo`);
+              await this._mettingRepository.createMongo(metting.nroEncuentro);
+              mettingPrevious = null;
+              continue;
+            }
           }
 
           mettingPrevious = metting;
