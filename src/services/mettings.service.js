@@ -417,13 +417,14 @@ export default class MettingsService {
       const emitData = [];
 
       if (value) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+
         let itemsTotalProcess = value.length;
         let processCount = 1;
 
         progressBar.start(itemsTotalProcess, 0);
 
         for (let item of value) {
-          await new Promise((resolve) => setTimeout(resolve, 200));
           progressBar.increment();
           progressBar.update(processCount++);
           console.log(`Metting to process ${item.number}`);
