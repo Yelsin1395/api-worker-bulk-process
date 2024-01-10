@@ -99,7 +99,7 @@ async function workerProcess(data) {
         }
 
         for (const metting of items) {
-          if (metting.archivos.length || metting.archivos !== null) {
+          if (metting.archivos?.length || metting.archivos !== null) {
             console.log(`🔃🔃🔃 Process conbine files metting ${metting.nroEncuentro} ...  🔃🔃🔃`);
             filesCombine = helpers.combineFiles(filesCombine, metting.archivos, 'documentoRequerido', 'id');
           }
@@ -116,7 +116,7 @@ async function workerProcess(data) {
           const filesNew = await normalizeFiles(metting.nroEncuentro, metting.nroLote, metting.nroFactura, filesCombine);
 
           console.log(`🔃🔃🔃 Process conbine files metting ${metting.nroEncuentro} and add new files to metting ...  🔃🔃🔃`);
-          metting.archivos = helpers.combineFiles(metting.archivos, filesNew, 'documentoRequerido', 'id');
+          metting.archivos = helpers.combineFiles(metting.archivos ? metting.archivos : [], filesNew, 'documentoRequerido', 'id');
 
           await container.items.upsert(metting);
           console.log(clc.greenBright(`💾 The data is stored correctly`));

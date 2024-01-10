@@ -375,7 +375,8 @@ export default class MettingsService {
 
   async doubleMechanismProcess() {
     const result = await this._mettingRepository.getAllMongo();
-    const wd = runner(result, 250);
+    console.log(`Registros obtneidos en mongo ${result.length}`);
+    const wd = runner(result, 100);
     let processEnd = false;
     const progressBar = new cliProgress.SingleBar({
       format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
