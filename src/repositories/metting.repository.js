@@ -5,6 +5,10 @@ export default class MettingRepository {
     this._metting = Metting;
   }
 
+  async getAllMongo() {
+    return this._metting.distinct('number').find();
+  }
+
   async getByFacturaLote(nroFactura, nroLote) {
     const { container } = await this._cosmosImpl.impl.containers.createIfNotExists({ id: this._config.COSMOS_TABLE_MEETING });
 

@@ -164,6 +164,32 @@ function buildObjectToQueryString(object) {
   }
 }
 
+function combineFiles(array1, array2, compare1, compare2) {
+  if (!array1.length) {
+    return (array1 = array2);
+  }
+
+  for (const file2 of array2) {
+    let index;
+
+    if (compare2) {
+      index = array1.findIndex((file1) => file1[compare1][compare2] === file2[compare1][compare2]);
+    } else {
+      index = array1.findIndex((file1) => file1[compare1] === file2[compare1]);
+    }
+
+    file2.nombre = file2.nombre ? file2.nombre : '';
+
+    if (index !== -1) {
+      array1[index] = file2;
+    } else {
+      array1.push(file2);
+    }
+  }
+
+  return array1;
+}
+
 module.exports = {
   currentDateDDMMAA,
   normalizeCurrentDate,
@@ -173,4 +199,5 @@ module.exports = {
   normalizeDateTimeSeparate,
   normalizeTypeInvoice,
   buildObjectToQueryString,
+  combineFiles,
 };

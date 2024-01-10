@@ -8,6 +8,7 @@ export default function ({ mettingsController }) {
   router.post('/process-files', mettingsController.processFilesByMetting);
   router.post('/search-metting-process', mettingsController.searchBlobsByNroEncuentroProcess);
   router.post('/double-mechanism-export', mettingsController.exportDoubleMechanism);
+  router.post('/double-mechanism-process', mettingsController.doubleMechanismProcess);
 
   return router;
 }

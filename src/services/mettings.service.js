@@ -1,5 +1,6 @@
 import { Worker } from 'worker_threads';
 import cliProgress from 'cli-progress';
+import runner from '../common/runner';
 const clc = require('cli-color');
 const helpers = require('../common/helpers');
 
@@ -368,6 +369,54 @@ export default class MettingsService {
 
       progressBar.stop();
     } while (continuationToken);
+
+    console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
+  }
+
+  async doubleMechanismProcess() {
+    const result = await this._mettingRepository.getAllMongo();
+    const wd = runner(result, 250);
+    let processEnd = false;
+    const progressBar = new cliProgress.SingleBar({
+      format: 'CLI Progress |' + clc.cyan('{bar}') + '| {percentage}% || {value}/{total} Chunks',
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+      hideCursor: true,
+    });
+
+    do {
+      const { done, value } = wd.next();
+      const emitData = [];
+      let itemsTotalProcess = value.length;
+      let processCount = 1;
+
+      progressBar.start(itemsTotalProcess, 0);
+
+      if (value) {
+        for (let item of value) {
+          progressBar.increment();
+          progressBar.update(processCount++);
+          emitData.push(await this._mettingRepository.getAllByNroEncuentro(item.number));
+        }
+      }
+
+      if (emitData.length) {
+        const dataProcess = Buffer.from(JSON.stringify(emitData), 'utf8');
+
+        console.log('📨 Send data process...');
+
+        const worker = new Worker('./src/workers/doubleMechanismProcess.js', {
+          workerData: { dataProcess },
+        });
+
+        worker.once('message', (processId) => {
+          console.log(`♻️ Worker copy valoidate files metting process ${processId}`);
+        });
+      }
+
+      processEnd = done;
+      progressBar.stop();
+    } while (!processEnd);
 
     console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
