@@ -5,7 +5,6 @@ const { initConnect } = require('./cloudConnectionCosmosDb');
 const cloudStorageBlob = require('./cloudConnectionStorageBlob');
 const processRunner = require('../utils/processRunner.util');
 const helpers = require('../common/helpers');
-const setInput = require('../common/setInput');
 const processId = uuidv4();
 
 parentPort.postMessage(processId);
