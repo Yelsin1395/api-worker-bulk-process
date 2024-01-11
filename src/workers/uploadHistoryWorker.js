@@ -27,57 +27,53 @@ async function workerProcess(data) {
 
     if (value) {
       for (let item of value) {
-        const { metting, inputFile } = item;
+        const { metting, inputsFiles } = item;
 
-        const separateFileName = inputFile.name.split('-');
-        const fileExtension = path.extname(inputFile.name);
-        let remoteFilePath = `${process.env.SFTP_PATHNAME_EXPEDIENTE_DIGITAL}/${inputFile.name}`;
-        let blobFilePath = `documentos/LD0001/FD0001/ED0001/FD0001_ED0001_${separateFileName[1]}${fileExtension}`;
+        for (const inputFile of inputsFiles) {
+          const fileExtension = path.extname(inputFile.name);
+          let remoteFilePath = `${process.env.SFTP_PATHNAME_EXPEDIENTE_DIGITAL}/${inputFile.name}`;
+          let blobFileUpload = `documentos/${metting.nroLote}/${metting.nroFactura}/${metting.nroEncuentro}/${metting.nroFactura}_${metting.nroEncuentro}_${inputFile.document.id}${fileExtension}`;
 
-        console.log(clc.yellow(`⌚⚠️ Download file SFTP ${inputFile.name} ...`));
-        const fileBuffer = await sftp.get(remoteFilePath);
-        console.log(clc.bgGreen('✅✅✅ Successful download ✅✅✅'));
+          console.log(clc.yellow(`⌚⚠️ Download file SFTP ${inputFile.name} ...`));
+          const fileBuffer = await sftp.get(remoteFilePath);
+          console.log(clc.bgGreen('✅✅✅ Successful download ✅✅✅'));
 
-        const uploadOptions = {
-          tags: {
-            NUMEROENCUENTRO: 'ED0001',
-            NUMEROFACTURA: 'FD0001',
-            NUMEROLOTE: 'LD0001',
-            TIPO: 'ARCHIVO',
-          },
-        };
+          const uploadOptions = {
+            tags: {
+              ENCUENTRO: metting.nroEncuentro,
+              FACTURADOC: metting.nroFactura,
+              LOTEDOC: metting.nroLote,
+            },
+          };
 
-        console.log(clc.yellow(`⌚⚠️ Upload file blob storage ${inputFile.name} ...`));
-        const blockBlobClient = blobContainerClient.getBlockBlobClient(blobFilePath);
-        await blockBlobClient.uploadData(fileBuffer, uploadOptions);
-        console.log(clc.bgGreen('✅✅✅ Successful upload to blob storage ✅✅✅'));
-        console.log({ url: blockBlobClient.url });
+          console.log(clc.yellow(`⌚⚠️ Upload file blob storage ${inputFile.name} ...`));
+          const blockBlobClient = blobContainerClient.getBlockBlobClient(blobFileUpload);
+          await blockBlobClient.uploadData(fileBuffer, uploadOptions);
+          console.log(clc.bgGreen('✅✅✅ Successful upload to blob storage ✅✅✅'));
 
-        const payloadFile = {
-          nombre: '',
-          url: blockBlobClient.url,
-          urlSas: blobFilePath,
-          documentoRequerido: {
-            id: null,
-            descripcion: null,
-          },
-          estado: 'OK',
-          mensajeError: '',
-          existe: true,
-          error: '',
-          idPeticionHis: '',
-          usuario: '',
-          origen: 'CARGA_HISTORICA',
-          fechaCarga: helpers.normalizeCurrentDateTimeUtc(),
-        };
+          const payloadFile = {
+            nombre: `${typeDocument}${fileExtension}`,
+            url: blockBlobClient.url,
+            urlSas: blobFileUpload,
+            documentoRequerido: {
+              id: inputFile.document.id,
+              descripcion: inputFile.document.descripcion,
+            },
+            estado: 'OK',
+            mensajeError: '',
+            existe: true,
+            error: '',
+            idPeticionHis: '',
+            usuario: '',
+            origen: 'CARGA_HISTORICA',
+            fechaCarga: helpers.normalizeCurrentDateTimeUtc(),
+          };
 
-        metting.archivos.push(payloadFile);
+          metting.archivos.push(payloadFile);
+        }
 
-        console.log(JSON.stringify(metting));
-
-        // await container.items.upsert(payload);
-
-        // console.log(clc.greenBright(`💾 The data is stored correctly`));
+        await container.items.upsert(payload);
+        console.log(clc.greenBright(`💾 The data is stored correctly`));
       }
     }
 

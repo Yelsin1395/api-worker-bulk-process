@@ -5,12 +5,13 @@ import helpers from '../common/helpers';
 const clc = require('cli-color');
 
 export default class UploadHistoryService {
-  constructor({ config, loggerRepository, clinicaRecordRepository, invoiceRepository, mettingRepository, storageSftpImpl }) {
+  constructor({ config, loggerRepository, clinicaRecordRepository, invoiceRepository, mettingRepository, storageTableRepository, storageSftpImpl }) {
     this._config = config;
     this._loggerRepository = loggerRepository;
     this._clinicaRecordRepository = clinicaRecordRepository;
     this._invoiceRepository = invoiceRepository;
     this._mettingRepository = mettingRepository;
+    this._storageTableRepository = storageTableRepository;
     this._storageSftpImpl = storageSftpImpl;
   }
 
@@ -51,19 +52,33 @@ export default class UploadHistoryService {
 
         if (mettings.length) {
           for (const metting of mettings) {
-            // TODO: se debe considerar que el encuentro puede terner varios archvios (falta refactorizar)
+            const filesNew = [];
+
             for (const file of files) {
-              const duplicate = emitData.filter((x) => x.inputFile.name === file.name && x.inputFile.size === file.size);
+              const duplicate = filesNew.filter((x) => x.name === file.name && x.size === file.size);
 
               if (duplicate.length > 0) {
+                console.log(`👫👫👫 Duplicate file ${file.name} 👫👫👫`);
                 continue;
               }
 
-              // metting.nroEncuentro
-              if (file.name.split('-').includes('76981467')) {
-                emitData.push({ metting, inputFile: file });
+              const separateName = file.name.split('-');
+              const catalog = await this._storageTableRepository.getTypeDocByCodigo(separateName[1]);
+
+              if (catalog) {
+                file.document = {
+                  id: catalog.Codigo,
+                  descripcion: catalog.Descripcion,
+                };
+              }
+
+              if (separateName.includes(metting.nroEncuentro)) {
+                console.log(`✨✨✨ Add file ${file.name} to metting ${metting.nroEncuentro} ✨✨✨`);
+                filesNew.push(file);
               }
             }
+
+            emitData.push({ metting, inputsFiles: filesNew });
           }
         }
       }
@@ -82,7 +97,9 @@ export default class UploadHistoryService {
       }
 
       progressBar.stop();
-    } while (false);
+    } while (continuationToken);
+
+    console.log(clc.bgMagentaBright(`🏁🏁🏁 Process finished 🏁🏁🏁`));
   }
 
   async exportReport() {
