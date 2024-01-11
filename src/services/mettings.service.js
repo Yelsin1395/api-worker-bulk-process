@@ -417,7 +417,7 @@ export default class MettingsService {
       const emitData = [];
 
       if (value) {
-        await new Promise((resolve) => setTimeout(resolve, 1200));
+        // await new Promise((resolve) => setTimeout(resolve, 1200));
 
         let itemsTotalProcess = value.length;
         let processCount = 1;
