@@ -18,7 +18,7 @@ export default class InvoiceRepository {
     const data = await container.items.query(querySpec, { maxItemCount: this._config.MAX_ITEM_COUNT_INVOICE, continuationToken }).fetchNext();
 
     console.log(`📦 Data package process found: ${data?.resources?.length}`);
-    
+
     return {
       resources: data.resources,
       continuationToken: data.continuationToken,

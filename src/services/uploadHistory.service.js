@@ -65,12 +65,14 @@ export default class UploadHistoryService {
               const separateName = file.name.split('-');
               const catalog = await this._storageTableRepository.getTypeDocByCodigo(separateName[1]);
 
-              if (catalog) {
-                file.document = {
-                  id: catalog.Codigo,
-                  descripcion: catalog.Descripcion,
-                };
+              if (!catalog) {
+                continue;
               }
+
+              file.document = {
+                id: catalog.Codigo,
+                descripcion: catalog.Descripcion,
+              };
 
               if (separateName.includes(metting.nroEncuentro)) {
                 console.log(`✨✨✨ Add file ${file.name} to metting ${metting.nroEncuentro} ✨✨✨`);
