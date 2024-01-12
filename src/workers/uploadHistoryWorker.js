@@ -70,10 +70,10 @@ async function workerProcess(data) {
           };
 
           metting.archivos.push(payloadFile);
-        }
 
-        await container.items.upsert(payload);
-        console.log(clc.greenBright(`💾 The data is stored correctly`));
+          await container.items.upsert(metting);
+          console.log(clc.greenBright(`💾 The data is stored correctly`));
+        }
       }
     }
 
