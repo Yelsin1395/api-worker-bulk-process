@@ -52,7 +52,7 @@ async function workerProcess(data) {
           console.log(clc.bgGreen('✅✅✅ Successful upload to blob storage ✅✅✅'));
 
           const payloadFile = {
-            nombre: `${typeDocument}${fileExtension}`,
+            nombre: `${inputFile.document.id}${fileExtension}`,
             url: blockBlobClient.url,
             urlSas: blobFileUpload,
             documentoRequerido: {
@@ -71,7 +71,7 @@ async function workerProcess(data) {
 
           metting.archivos.push(payloadFile);
         }
-        
+
         await container.items.upsert(metting);
         console.log(clc.greenBright(`💾 The data is stored correctly`));
       }
